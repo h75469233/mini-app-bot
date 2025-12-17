@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mini App</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    input, button { margin: 5px 0; padding: 5px; font-size: 16px; width: 100%; }
+    #report { margin-top: 20px; white-space: pre-wrap; background: #f0f0f0; padding: 10px; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <h2>Расчёт оплаты зала 🏐</h2>
+
+  <label>Сумма за 1 час:</label>
+  <input type="number" id="hallPrice" placeholder="например 1500">
+
+  <label>Общее количество часов:</label>
+  <input type="number" id="hours" placeholder="например 5">
+
+  <label>Общее количество игроков:</label>
+  <input type="number" id="totalPlayers" placeholder="например 20">
+
+  <button onclick="generateReport()">Сгенерировать отчёт</button>
+
+  <div id="report"></div>
+
+  <script>
+    function roundToTen(n) { return Math.ceil(n/10)*10; }
+
+    function generateReport() {
+      const hallPrice = Number(document.getElementById('hallPrice').value);
+      const hours = Number(document.getElementById('hours').value);
+      const totalPlayers = Number(document.getElementById('totalPlayers').value);
+
+      if (!hallPrice || !hours || !totalPlayers) { alert('Заполните все поля!'); return; }
+
+      let text = `🏐 Расчёт оплаты зала 🏐\n`;
+      text += `Сумма за 1 час: ${hallPrice}₽\n`;
+      text += `Общее количество часов: ${hours}\n`;
+      text += `Всего игроков: ${totalPlayers}\n\n`;
+
+      for (let h=1; h<=hours; h++) {
+        const sum = roundToTen(hallPrice / totalPlayers * h);
+        text += `⏱ ${h} час(а) — ${sum}₽\n`;
+      }
+
+      text += `\n💷 Хвостики и бонусы приветствуются!\nСпасибо всем!`;
+
+      document.getElementById('report').innerText = text;
+
+      if (window.Telegram.WebApp) {
+        Telegram.WebApp.sendData(JSON.stringify({hallPrice, hours, totalPlayers}));
+      }
+    }
+  </script>
+</body>
+</html>
