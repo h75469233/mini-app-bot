@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Калькулятор оплаты зала</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; background: #f7f7f7; }
+  h2 { color: #333; }
+  input, button { padding: 10px; margin: 5px 0; width: 100%; font-size: 16px; }
+  .hour-buttons button { width: 30%; margin: 5px; }
+  .summary { background: #fff; padding: 10px; margin-top: 10px; border-radius: 5px; }
+</style>
+</head>
+<body>
+
+<h2>Калькулятор оплаты зала 🏐</h2>
+
+<label>Сумма зала за 1 час:</label>
+<input type="number" id="hallPrice" placeholder="например 1500">
+
+<label>Количество часов аренды:</label>
+<input type="number" id="totalHours" placeholder="например 5" min="1" max="6">
+
+<label>Общее количество игроков:</label>
+<input type="number" id="totalPlayers" placeholder="например 20" min="1">
+
+<button onclick="startDistribution()">Начать распределение</button>
+
+<div id="hoursDiv" style="display:none;">
+  <h3>Распределение игроков по часам ⏱</h3>
+  <div class="hour-buttons" id="hourButtons"></div>
+  <label>Количество игроков для выбранного часа:</label>
+  <input type="number" id="playersForHour" min="1">
+  <button onclick="addPlayers()">Добавить</button>
+  <p id="remaining"></p>
+</div>
+
+<div class="summary" id="previewDiv" style="display:none;">
+  <h3>Предпросмотр отчёта 📄</h3>
+  <pre id="previewText"></pre>
+  <button onclick="sendReport()">Отправить отчёт ✅</button>
+</div>
+
+<script>
+let hallPrice = 0;
+let totalHours = 0;
+let totalPlayers = 0;
+let playersByHours = {};
+let currentHour = null;
+
+function startDistribution() {
+  hallPrice = Number(document.getElementById('hallPrice').value);
+  totalHours = Number(document.getElementById('totalHours').value);
+  totalPlayers = Number(document.getElementById('totalPlayers').value);
+
+  if (!hallPrice || !totalHours || !totalPlayers) {
+    alert("Введите все значения корректно!");
+    return;
+  }
+
+  playersByHours = {};
+  document.getElementById('hoursDiv').style.display = 'block';
+  renderHourButtons();
+  updateRemaining();
+}
+
+function renderHourButtons() {
+  const container = document.getElementById('hourButtons');
+  container.innerHTML = '';
+  for (let i=1;i<=totalHours;i++){
+    const btn = document.createElement('button');
+    btn.innerText = `${i} час${i>1?'а':''}`;
+    btn.onclick = ()=>{currentHour=i;};
+    container.appendChild(btn);
+  }
+}
+
+function addPlayers() {
+  const val = Number(document.getElementById('playersForHour').value);
+  if (!currentHour) { alert('Выберите час!'); return; }
+  if (!val || val < 1) { alert('Введите корректное количество игроков'); return; }
+
+  const already = Object.values(playersByHours).reduce((a,b)=>a+b,0);
+  if (already + val > totalPlayers) { alert('Превышено общее количество игроков'); return; }
+
+  playersByHours[currentHour] = val;
+  updateRemaining();
+  renderPreview();
+}
+
+function updateRemaining() {
+  const sum = Object.values(playersByHours).reduce((a,b)=>a+b,0);
+  document.getElementById('remaining').innerText = `Осталось распределить: ${totalPlayers - sum} человек`;
+}
+
+function renderPreview() {
+  document.getElementById('previewDiv').style.display='block';
+  let text = `ОПЛАТА ЗА ЗАЛ 🏐\nСумма за 1 час: ${hallPrice}₽\nОбщее количество часов: ${totalHours}\nВсего игроков: ${totalPlayers}\n\n`;
+  text += 'Распределение по часам:\n';
+  for (let h in playersByHours){
+    text += `${h} час(а): ${playersByHours[h]} человек\n`;
+  }
+
+  // Подсчёт суммы
+  const playersInHour = {};
+  for(let h=1;h<=totalHours;h++){ 
+    playersInHour[h] = 0;
+    for(let ph in playersByHours){
+      if(Number(ph) >= h) playersInHour[h]+=playersByHours[ph];
+    }
+  }
+
+  for(let ph in playersByHours){
+    let sumPerPerson=0;
+    for(let h=1;h<=ph;h++) sumPerPerson+=hallPrice/playersInHour[h];
+    sumPerPerson = Math.ceil(sumPerPerson/10)*10;
+    text += `Сумма за ${ph} час(а) на человека: ${sumPerPerson}₽\n`;
+  }
+
+  document.getElementById('previewText').innerText = text;
+}
+
+function sendReport() {
+  const data = {
+    hallPrice, totalHours, totalPlayers, playersByHours
+  };
+  // Отправляем данные боту
+  Telegram.WebApp.sendData(JSON.stringify(data));
+  alert('Отчёт отправлен боту!');
+}
+</script>
+</body>
+</html>
