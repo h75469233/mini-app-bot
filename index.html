@@ -2,58 +2,166 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mini App</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    input, button { margin: 5px 0; padding: 5px; font-size: 16px; width: 100%; }
-    #report { margin-top: 20px; white-space: pre-wrap; background: #f0f0f0; padding: 10px; border-radius: 8px; }
-  </style>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Расчёт оплаты зала</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: #e5e7eb;
+  padding: 16px;
+}
+h2 { margin-top: 0; }
+input {
+  width: 100%;
+  padding: 8px;
+  margin: 6px 0 14px;
+  border-radius: 8px;
+  border: none;
+  font-size: 16px;
+}
+.hour-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.hour-row span {
+  width: 80px;
+}
+button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 10px;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+}
+.preview { background: #2563eb; color: white; }
+.send { background: #16a34a; color: white; }
+.reset { background: #dc2626; color: white; }
+.box {
+  background: #020617;
+  padding: 12px;
+  border-radius: 10px;
+  margin-top: 14px;
+  white-space: pre-wrap;
+}
+.small { font-size: 14px; color: #94a3b8; }
+</style>
 </head>
+
 <body>
-  <h2>Расчёт оплаты зала 🏐</h2>
 
-  <label>Сумма за 1 час:</label>
-  <input type="number" id="hallPrice" placeholder="например 1500">
+<h2 id="date"></h2>
 
-  <label>Общее количество часов:</label>
-  <input type="number" id="hours" placeholder="например 5">
+<label>💵 Цена зала за 1 час</label>
+<input type="number" id="price">
 
-  <label>Общее количество игроков:</label>
-  <input type="number" id="totalPlayers" placeholder="например 20">
+<label>🕑 Общее количество часов аренды</label>
+<input type="number" id="hours" min="1" max="24">
 
-  <button onclick="generateReport()">Сгенерировать отчёт</button>
+<label>👥 Общее количество игроков</label>
+<input type="number" id="players" min="1" max="50">
 
-  <div id="report"></div>
+<div id="hoursBlock"></div>
+<div class="small" id="left"></div>
 
-  <script>
-    function roundToTen(n) { return Math.ceil(n/10)*10; }
+<button class="preview" onclick="preview()">👀 Предпросмотр</button>
+<button class="reset" onclick="resetAll()">🔄 Очистить</button>
+<button class="send" onclick="send()">✅ Отправить в Telegram</button>
 
-    function generateReport() {
-      const hallPrice = Number(document.getElementById('hallPrice').value);
-      const hours = Number(document.getElementById('hours').value);
-      const totalPlayers = Number(document.getElementById('totalPlayers').value);
+<div id="previewBox" class="box" style="display:none"></div>
 
-      if (!hallPrice || !hours || !totalPlayers) { alert('Заполните все поля!'); return; }
+<script>
+Telegram.WebApp.ready();
+Telegram.WebApp.expand();
 
-      let text = `🏐 Расчёт оплаты зала 🏐\n`;
-      text += `Сумма за 1 час: ${hallPrice}₽\n`;
-      text += `Общее количество часов: ${hours}\n`;
-      text += `Всего игроков: ${totalPlayers}\n\n`;
+const dateEl = document.getElementById('date');
+const today = new Date();
+const days = ['ВОСКРЕСЕНЬЕ','ПОНЕДЕЛЬНИК','ВТОРНИК','СРЕДА','ЧЕТВЕРГ','ПЯТНИЦА','СУББОТА'];
+dateEl.textContent = `📅 ${days[today.getDay()]} ${today.toLocaleDateString('ru-RU')}`;
 
-      for (let h=1; h<=hours; h++) {
-        const sum = roundToTen(hallPrice / totalPlayers * h);
-        text += `⏱ ${h} час(а) — ${sum}₽\n`;
-      }
+document.getElementById('hours').addEventListener('input', buildHours);
 
-      text += `\n💷 Хвостики и бонусы приветствуются!\nСпасибо всем!`;
+function buildHours() {
+  const hours = Number(hoursInput.value);
+  const block = document.getElementById('hoursBlock');
+  block.innerHTML = '<h3>Распределение игроков по часам</h3>';
 
-      document.getElementById('report').innerText = text;
+  for (let i = 1; i <= hours; i++) {
+    block.innerHTML += `
+      <div class="hour-row">
+        <span>${i} час</span>
+        <input type="number" min="0" data-hour="${i}">
+      </div>`;
+  }
+}
 
-      if (window.Telegram.WebApp) {
-        Telegram.WebApp.sendData(JSON.stringify({hallPrice, hours, totalPlayers}));
-      }
+function preview() {
+  const data = collectData();
+  if (!data) return;
+
+  document.getElementById('previewBox').style.display = 'block';
+  document.getElementById('previewBox').textContent =
+`📅 ${data.date}
+
+ОПЛАТА ЗА ЗАЛ
+Цена: ${data.price}₽ / час
+Всего игроков: ${data.players}
+
+Распределение:
+${data.dist.map(d => `${d.count} человек — ${d.hour} час`).join('\n')}`;
+}
+
+function send() {
+  const data = collectData();
+  if (!data) return;
+  Telegram.WebApp.sendData(JSON.stringify(data));
+}
+
+function resetAll() {
+  document.querySelectorAll('input').forEach(i => i.value = '');
+  document.getElementById('hoursBlock').innerHTML = '';
+  document.getElementById('previewBox').style.display = 'none';
+}
+
+function collectData() {
+  const price = Number(priceInput.value);
+  const hours = Number(hoursInput.value);
+  const players = Number(playersInput.value);
+  const dist = [];
+
+  let sum = 0;
+  document.querySelectorAll('[data-hour]').forEach(i => {
+    const v = Number(i.value);
+    if (v) {
+      sum += v;
+      dist.push({hour: i.dataset.hour, count: v});
     }
-  </script>
+  });
+
+  if (!price || !hours || !players) {
+    alert('Заполните все поля');
+    return null;
+  }
+
+  if (sum > players) {
+    alert('Превышено количество игроков');
+    return null;
+  }
+
+  return {
+    date: dateEl.textContent.replace('📅 ',''),
+    price, hours, players, dist
+  };
+}
+</script>
+
 </body>
 </html>
