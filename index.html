@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Расчёт оплаты</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
+      padding: 16px;
+    }
+    h2 {
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: bold;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      font-size: 16px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 16px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+    }
+    .preview {
+      background: #4CAF50;
+      color: white;
+    }
+    .clear {
+      background: #ccc;
+    }
+  </style>
+</head>
+
+<body>
+  <h2 id="date"></h2>
+
+  <label>💵 Цена зала за 1 час</label>
+  <input id="hallPrice" type="number" placeholder="1500">
+
+  <label>🕑 Общее количество часов аренды</label>
+  <input id="totalHours" type="number" placeholder="5" onchange="renderHours()">
+
+  <label>👥 Общее количество игроков</label>
+  <input id="totalPlayers" type="number" placeholder="19">
+
+  <div id="hoursBlock"></div>
+
+  <button class="preview" onclick="sendPreview()">👀 Предпросмотр</button>
+  <button class="clear" onclick="clearAll()">🔄 Очистить</button>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.expand();
+
+document.getElementById('date').innerText = getDate();
+
+function getDate() {
+  const d = new Date();
+  const days = ['ВОСКРЕСЕНЬЕ','ПОНЕДЕЛЬНИК','ВТОРНИК','СРЕДА','ЧЕТВЕРГ','ПЯТНИЦА','СУББОТА'];
+  return `📅 ${days[d.getDay()]} ${d.toLocaleDateString('ru-RU')}`;
+}
+
+function renderHours() {
+  const hours = Number(document.getElementById('totalHours').value);
+  const block = document.getElementById('hoursBlock');
+  block.innerHTML = '';
+
+  if (!hours || hours < 1) return;
+
+  block.innerHTML += `<label>⏱ Распределение игроков по часам</label>`;
+
+  for (let i = 1; i <= hours; i++) {
+    block.innerHTML += `
+      <input type="number"
+             placeholder="${i} час(а)"
+             data-hour="${i}">
+    `;
+  }
+}
+
+function sendPreview() {
+  const data = {
+    hallPrice: Number(document.getElementById('hallPrice').value),
+    totalHours: Number(document.getElementById('totalHours').value),
+    totalPlayers: Number(document.getElementById('totalPlayers').value),
+    playersByHours: {}
+  };
+
+  document.querySelectorAll('[data-hour]').forEach(i => {
+    const v = Number(i.value);
+    if (v > 0) data.playersByHours[i.dataset.hour] = v;
+  });
+
+  tg.sendData(JSON.stringify(data));
+}
+
+function clearAll() {
+  document.querySelectorAll('input').forEach(i => i.value = '');
+  document.getElementById('hoursBlock').innerHTML = '';
+}
+</script>
+</body>
+</html>
