@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Расчёт оплаты</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+body { font-family: Arial; padding: 16px; }
+input { width: 100%; padding: 8px; margin-bottom: 10px; }
+button { width: 100%; padding: 12px; font-size: 16px; }
+</style>
+</head>
+
+<body>
+<h3>📅 Расчёт оплаты</h3>
+
+<input id="price" type="number" placeholder="💵 Цена зала за 1 час">
+<input id="hours" type="number" placeholder="🕑 Общее количество часов">
+<input id="players" type="number" placeholder="👥 Общее количество игроков">
+
+<h4>Распределение игроков</h4>
+<div id="distribution"></div>
+
+<button onclick="preview()">👀 Предпросмотр</button>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.expand();
+
+document.getElementById('hours').addEventListener('input', renderHours);
+
+function renderHours() {
+  const hours = Number(document.getElementById('hours').value);
+  const div = document.getElementById('distribution');
+  div.innerHTML = '';
+
+  for (let h = 1; h <= hours; h++) {
+    div.innerHTML += `
+      <input type="number"
+        placeholder="${h} час(а) — сколько человек"
+        id="h${h}">
+    `;
+  }
+}
+
+function preview() {
+  const hallPrice = Number(price.value);
+  const totalHours = Number(hours.value);
+  const totalPlayers = Number(players.value);
+
+  const playersByHours = {};
+  for (let h = 1; h <= totalHours; h++) {
+    const v = Number(document.getElementById('h' + h).value || 0);
+    if (v > 0) playersByHours[h] = v;
+  }
+
+  tg.sendData(JSON.stringify({
+    hallPrice,
+    totalHours,
+    totalPlayers,
+    playersByHours
+  }));
+}
+</script>
+</body>
+</html>
