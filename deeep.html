@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Чаркулятор</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            min-height: 100vh;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            -webkit-text-size-adjust: 100%;
+            touch-action: pan-y;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 700px;
+            padding: 25px;
+            animation: slideUp 0.4s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+                border-radius: 15px;
+                margin: 10px;
+            }
+            
+            body {
+                padding: 10px;
+                align-items: flex-start;
+                min-height: 100vh;
+            }
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #eaeaea;
+            padding-bottom: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                margin-bottom: 15px;
+                padding-bottom: 10px;
+            }
+        }
+        
+        .header h1 {
+            color: #1a2980;
+            font-size: 26px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .date-display {
+            color: #666;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+        
+        .main-date {
+            color: #1a2980;
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0;
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 22px;
+            }
+            
+            .main-date {
+                font-size: 20px;
+            }
+        }
+        
+        .input-section {
+            margin-bottom: 20px;
+        }
+        
+        .basic-inputs {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        @media (max-width: 768px) {
+            .basic-inputs {
+                grid-template-columns: 1fr;
+                gap: 10px;
+                margin-bottom: 15px;
+            }
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .input-group {
+                margin-bottom: 10px;
+            }
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .input-with-icon {
+            position: relative;
+        }
+        
+        .input-with-icon i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #1a2980;
+        }
+        
+        .input-with-icon input {
+            width: 100%;
+            padding: 14px 14px 14px 45px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+        
+        @media (max-width: 768px) {
+            .input-with-icon input {
+                padding: 12px 12px 12px 45px;
+                font-size: 15px;
+            }
+        }
+        
+        .input-with-icon input:focus {
+            border-color: #1a2980;
+            box-shadow: 0 0 0 3px rgba(26, 41, 128, 0.1);
+            outline: none;
+        }
+        
+        .players-section {
+            margin-top: 25px;
+        }
+        
+        @media (max-width: 768px) {
+            .players-section {
+                margin-top: 15px;
+            }
+        }
+        
+        .section-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .section-title {
+                font-size: 16px;
+                margin-bottom: 10px;
+            }
+        }
+        
+        .hours-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .hours-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 10px;
+            }
+        }
+        
+        .hour-group {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s;
+        }
+        
+        @media (max-width: 768px) {
+            .hour-group {
+                padding: 15px;
+            }
+        }
+        
+        .hour-group:hover {
+            border-color: #1a2980;
+            transform: translateY(-2px);
+        }
+        
+        .hour-header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .hour-title {
+            font-weight: 700;
+            color: #1a2980;
+            font-size: 16px;
+        }
+        
+        @media (max-width: 768px) {
+            .hour-title {
+                font-size: 14px;
+            }
+        }
+        
+        .hour-input-group {
+            margin-bottom: 10px;
+        }
+        
+        .hour-input-label {
+            display: block;
+            color: #555;
+            font-size: 13px;
+            margin-bottom: 5px;
+            font-weight: 500;
+            text-align: center;
+        }
+        
+        .hour-input {
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+        
+        @media (max-width: 768px) {
+            .hour-input {
+                padding: 8px;
+                font-size: 15px;
+            }
+        }
+        
+        .hour-input:focus {
+            border-color: #1a2980;
+            outline: none;
+        }
+        
+        .calculate-btn {
+            width: 100%;
+            padding: 18px;
+            background: #95a5a6;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: not-allowed;
+            transition: all 0.3s;
+            margin-top: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+        
+        @media (max-width: 768px) {
+            .calculate-btn {
+                padding: 16px;
+                font-size: 16px;
+                margin-top: 20px;
+            }
+        }
+        
+        .calculate-btn.active {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            cursor: pointer;
+        }
+        
+        .calculate-btn.active:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(46, 204, 113, 0.3);
+        }
+        
+        .result-section {
+            margin-top: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .result-section {
+                margin-top: 20px;
+                padding: 15px;
+                border-radius: 12px;
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .result-header {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .result-header {
+                font-size: 18px;
+                margin-bottom: 15px;
+            }
+        }
+        
+        .report-box {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-left: 4px solid #26d0ce;
+            white-space: pre-line;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+        
+        @media (max-width: 768px) {
+            .report-box {
+                padding: 15px;
+                font-size: 15px;
+                line-height: 1.5;
+            }
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            color: #666;
+            font-size: 13px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        @media (max-width: 768px) {
+            .footer {
+                margin-top: 15px;
+                padding-top: 15px;
+                font-size: 12px;
+            }
+        }
+        
+        .copy-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 25px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+        
+        @media (max-width: 768px) {
+            .copy-btn {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+        }
+        
+        .copy-btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        /* Новая кнопка для отправки в Telegram */
+        .telegram-btn {
+            background: linear-gradient(135deg, #0088cc 0%, #1e96c8 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 25px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            margin-left: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .telegram-btn {
+                padding: 10px 20px;
+                font-size: 14px;
+                margin-left: 0;
+                margin-top: 10px;
+            }
+        }
+        
+        .telegram-btn:hover {
+            background: linear-gradient(135deg, #0077b5 0%, #1a87b5 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 136, 204, 0.3);
+        }
+        
+        .telegram-btn.sending {
+            background: #7f8c8d;
+            cursor: not-allowed;
+        }
+        
+        .telegram-btn.success {
+            background: #27ae60;
+        }
+        
+        .telegram-btn.error {
+            background: #e74c3c;
+        }
+        
+        .actions {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 25px;
+        }
+        
+        @media (max-width: 768px) {
+            .actions {
+                margin-top: 15px;
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+        
+        .validation-message {
+            background: #fff8e1;
+            border-radius: 10px;
+            padding: 12px 15px;
+            margin: 15px 0;
+            border-left: 4px solid #ffb300;
+            font-size: 14px;
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .validation-message {
+                padding: 10px 12px;
+                margin: 10px 0;
+                font-size: 13px;
+            }
+        }
+        
+        .validation-message.error {
+            background: #ffebee;
+            border-left-color: #e74c3c;
+        }
+        
+        .validation-message.success {
+            background: #e8f5e9;
+            border-left-color: #27ae60;
+        }
+        
+        /* Сообщение о статусе отправки */
+        .status-message {
+            background: #e3f2fd;
+            border-radius: 10px;
+            padding: 12px 15px;
+            margin: 15px 0;
+            border-left: 4px solid #2196f3;
+            font-size: 14px;
+            display: none;
+            text-align: center;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .status-message {
+                padding: 10px 12px;
+                margin: 10px 0;
+                font-size: 13px;
+            }
+        }
+        
+        .status-message.success {
+            background: #e8f5e9;
+            border-left-color: #4caf50;
+        }
+        
+        .status-message.error {
+            background: #ffebee;
+            border-left-color: #f44336;
+        }
+        
+        /* Улучшение для маленьких экранов */
+        @media (max-width: 400px) {
+            .hours-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
+            
+            .hour-group {
+                padding: 12px;
+            }
+            
+            .hour-title {
+                font-size: 13px;
+            }
+            
+            .hour-input {
+                padding: 6px;
+                font-size: 14px;
+            }
+        }
+        
+        /* Предотвращение zoom на iOS при фокусе */
+        @media screen and (max-width: 768px) {
+            input, textarea, select {
+                font-size: 16px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="main-date" id="currentDate"></div>
+        </div>
+        
+        <div class="input-section">
+            <!-- Основные вводы -->
+            <div class="basic-inputs">
+                <div class="input-group">
+                    <label><i class="fas fa-money-bill-wave"></i> Цена зала за 1 час (₽)</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-ruble-sign"></i>
+                        <input type="number" id="hallPrice" min="700" max="10000" step="100" placeholder="700-10000">
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label><i class="fas fa-clock"></i>Часов аренды зала</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-clock"></i>
+                        <input type="number" id="hours" min="1" max="24" placeholder="1-24">
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label><i class="fas fa-users"></i> Всего игроков</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-user"></i>
+                        <input type="number" id="totalPlayers" min="1" max="35" placeholder="1-35">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="validation-message" id="validationMessage"></div>
+            
+            <!-- Распределение игроков по часам -->
+            <div class="players-section">
+                <div class="section-title">
+                    <i class="fas fa-user-clock"></i> Распределение игроков по часам
+                </div>
+                
+                <div class="hours-grid" id="hoursContainer">
+                    <!-- Часы будут добавлены динамически -->
+                </div>
+            </div>
+        </div>
+        
+        <button class="calculate-btn" id="calculateBtn">
+            <i class="fas fa-calculator"></i> Рассчитать
+        </button>
+        
+        <div class="result-section" id="resultSection">
+            <div class="result-header">
+                <i class="fas fa-file-invoice-dollar"></i> Результаты расчёта
+            </div>
+            
+            <div class="report-box" id="reportBox">
+                <!-- Отчёт будет вставлен сюда -->
+            </div>
+            
+            <!-- Сообщение о статусе отправки -->
+            <div class="status-message" id="statusMessage"></div>
+            
+            <div class="actions">
+                <button class="copy-btn" id="copyBtn">
+                    <i class="fas fa-copy"></i> Копировать результат
+                </button>
+                <button class="telegram-btn" id="telegramBtn">
+                    <i class="fab fa-telegram"></i> Отправить в Telegram
+                </button>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <!-- Футер оставлен пустым по вашему запросу -->
+        </div>
+    </div>
+    
+    <script>
+        // Конфигурация Telegram
+        const TOKEN = '8331524281:AAEpYS68GFeBbCxkG5tXzQfjRVHf7E1EymY';
+        const CHAT_ID = -1003677318941;
+        const RESULT_THREAD_ID = 8;
+        
+        // Оптимизация для Telegram Web App
+        const isTelegramWebApp = window.Telegram && window.Telegram.WebApp;
+        
+        if (isTelegramWebApp) {
+            // Инициализируем Telegram Web App
+            Telegram.WebApp.ready();
+            
+            // Раскрываем приложение на весь экран
+            Telegram.WebApp.expand();
+            
+            // Настраиваем цвета
+            Telegram.WebApp.setHeaderColor('#1a2980');
+            Telegram.WebApp.setBackgroundColor('#f8f9fa');
+            
+            // Настраиваем тему
+            const theme = Telegram.WebApp.colorScheme;
+            if (theme === 'dark') {
+                document.documentElement.style.setProperty('--bg-color', '#1a1a1a');
+                document.documentElement.style.setProperty('--text-color', '#ffffff');
+            }
+            
+            // Обработка кнопки "Назад"
+            Telegram.WebApp.BackButton.onClick(function() {
+                if (document.getElementById('resultSection').style.display === 'block') {
+                    // Если открыты результаты, скрываем их
+                    document.getElementById('resultSection').style.display = 'none';
+                    Telegram.WebApp.BackButton.hide();
+                } else {
+                    Telegram.WebApp.close();
+                }
+            });
+            
+            // Получаем данные пользователя
+            const user = Telegram.WebApp.initDataUnsafe.user;
+            if (user) {
+                console.log('Пользователь Telegram:', user);
+            }
+        }
+        
+        // Ждем загрузки DOM
+        document.addEventListener('DOMContentLoaded', function() {
+            // Отображаем текущую дату
+            function getDateInfo() {
+                const now = new Date();
+                const days = ['ВОСКРЕСЕНЬЕ', 'ПОНЕДЕЛЬНИК', 'ВТОРНИК', 'СРЕДА', 'ЧЕТВЕРГ', 'ПЯТНИЦА', 'СУББОТА'];
+                const dayOfWeek = days[now.getDay()];
+                
+                const day = String(now.getDate()).padStart(2, '0');
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const year = now.getFullYear();
+                
+                return `${dayOfWeek} ${day}.${month}.${year}`;
+            }
+            
+            // Устанавливаем текущую дату
+            document.getElementById('currentDate').textContent = getDateInfo();
+            
+            // Получаем элементы DOM
+            const hallPrice = document.getElementById('hallPrice');
+            const hoursInput = document.getElementById('hours');
+            const totalPlayers = document.getElementById('totalPlayers');
+            const hoursContainer = document.getElementById('hoursContainer');
+            const calculateBtn = document.getElementById('calculateBtn');
+            const resultSection = document.getElementById('resultSection');
+            const reportBox = document.getElementById('reportBox');
+            const copyBtn = document.getElementById('copyBtn');
+            const telegramBtn = document.getElementById('telegramBtn');
+            const validationMessage = document.getElementById('validationMessage');
+            const statusMessage = document.getElementById('statusMessage');
+            
+            // Функция для создания полей ввода по часам
+            function generateHourFields() {
+                const hours = Number(hoursInput.value);
+                hoursContainer.innerHTML = '';
+                
+                if (!hours || hours < 1) {
+                    updateValidation();
+                    return;
+                }
+                
+                for (let h = 1; h <= hours; h++) {
+                    const hourDiv = document.createElement('div');
+                    hourDiv.className = 'hour-group';
+                    
+                    hourDiv.innerHTML = `
+                        <div class="hour-header">
+                            <div class="hour-title">${h} ${h === 1 ? 'час' : h < 5 ? 'часа' : 'часов'}</div>
+                        </div>
+                        <div class="hour-input-group">
+                            <div class="hour-input-label">Игроков:</div>
+                            <input type="number" class="hour-input" 
+                                   min="0" 
+                                   placeholder="0"
+                                   data-hour="${h}">
+                        </div>
+                    `;
+                    
+                    hoursContainer.appendChild(hourDiv);
+                }
+                
+                // Добавляем обработчики событий на новые поля
+                const hourInputs = document.querySelectorAll('.hour-input');
+                hourInputs.forEach(input => {
+                    input.addEventListener('input', updateValidation);
+                    // Предотвращаем скроллинг страницы при фокусе на iOS
+                    input.addEventListener('touchstart', function(e) {
+                        e.stopPropagation();
+                    });
+                });
+                
+                updateValidation();
+            }
+            
+            // Функция для проверки валидации
+            function updateValidation() {
+                const price = Number(hallPrice.value);
+                const hours = Number(hoursInput.value);
+                const totalPlayersCount = Number(totalPlayers.value);
+                
+                // Проверяем основные поля
+                if (!price || price < 700 || price > 10000 || 
+                    !hours || hours < 1 || hours > 24 || 
+                    !totalPlayersCount || totalPlayersCount < 1 || totalPlayersCount > 35) {
+                    
+                    validationMessage.style.display = 'none';
+                    calculateBtn.classList.remove('active');
+                    calculateBtn.disabled = true;
+                    return;
+                }
+                
+                // Собираем данные о распределении игроков
+                const inputs = document.querySelectorAll('#hoursContainer input');
+                let sumPlayers = 0;
+                let hasInputs = false;
+                
+                inputs.forEach(input => {
+                    const value = Number(input.value || 0);
+                    if (value > 0) {
+                        hasInputs = true;
+                        sumPlayers += value;
+                    }
+                });
+                
+                // Проверяем сумму распределения
+                if (sumPlayers === totalPlayersCount && hasInputs) {
+                    validationMessage.style.display = 'block';
+                    validationMessage.className = 'validation-message success';
+                    validationMessage.innerHTML = `✓ Все данные верны! Распределено: ${sumPlayers} из ${totalPlayersCount} игроков`;
+                    
+                    calculateBtn.classList.add('active');
+                    calculateBtn.disabled = false;
+                } else {
+                    validationMessage.style.display = 'block';
+                    validationMessage.className = 'validation-message error';
+                    
+                    if (sumPlayers === 0) {
+                        validationMessage.innerHTML = `✗ Введите количество игроков для каждого часа игры`;
+                    } else {
+                        validationMessage.innerHTML = `✗ Сумма по часам (${sumPlayers}) не равна общему количеству игроков (${totalPlayersCount})`;
+                    }
+                    
+                    calculateBtn.classList.remove('active');
+                    calculateBtn.disabled = true;
+                }
+            }
+            
+            // Проверка валидности числа
+            function isValidNumber(v, min, max) {
+                return !isNaN(v) && v >= min && v <= max;
+            }
+            
+            // Функция для округления до десятков
+            function roundToTen(n) {
+                return Math.ceil(n / 10) * 10;
+            }
+            
+            // Основная функция расчета
+            function calculate() {
+                const price = Number(hallPrice.value);
+                const hours = Number(hoursInput.value);
+                const totalPlayersCount = Number(totalPlayers.value);
+                
+                // Валидация (на всякий случай)
+                if (!isValidNumber(price, 100, 50000)) {
+                    alert('Некорректная цена зала (от 100 до 50000)');
+                    return;
+                }
+                if (!isValidNumber(hours, 1, 24)) {
+                    alert('Некорректное количество часов (от 1 до 24)');
+                    return;
+                }
+                if (!isValidNumber(totalPlayersCount, 1, 50)) {
+                    alert('Некорректное количество игроков (от 1 до 50)');
+                    return;
+                }
+                
+                // Собираем данные о распределении игроков
+                const inputs = document.querySelectorAll('#hoursContainer input');
+                const playersByHours = {};
+                let sumPlayers = 0;
+                
+                inputs.forEach(input => {
+                    const value = Number(input.value || 0);
+                    if (value > 0) {
+                        const hour = Number(input.dataset.hour);
+                        playersByHours[hour] = value;
+                        sumPlayers += value;
+                    }
+                });
+                
+                // Проверяем, что сумма соответствует общему количеству игроков
+                if (sumPlayers !== totalPlayersCount) {
+                    alert(`Сумма по часам (${sumPlayers}) не равна общему количеству игроков (${totalPlayersCount})`);
+                    return;
+                }
+                
+                // ЛОГИКА РАСЧЕТА (неизменная)
+                const playersInHour = {};
+                for (let h = 1; h <= hours; h++) {
+                    playersInHour[h] = 0;
+                    for (let ph in playersByHours) {
+                        if (+ph >= h) {
+                            playersInHour[h] += playersByHours[ph];
+                        }
+                    }
+                }
+                
+                const hourCost = {};
+                for (let h = 1; h <= hours; h++) {
+                    hourCost[h] = price / playersInHour[h];
+                }
+                
+                // Собираем результаты
+                const results = [];
+                const sortedHours = Object.keys(playersByHours).sort((a, b) => a - b);
+                
+                sortedHours.forEach(h => {
+                    let sum = 0;
+                    for (let i = 1; i <= h; i++) {
+                        sum += hourCost[i];
+                    }
+                    
+                    const roundedSum = roundToTen(sum);
+                    
+                    results.push({
+                        players: playersByHours[h],
+                        hours: parseInt(h),
+                        costPerPlayer: roundedSum
+                    });
+                });
+                
+                // Создаем отчёт в нужном формате
+                createReport(price, hours, totalPlayersCount, results);
+            }
+            
+            // Создание отчёта в нужном формате
+            function createReport(price, hours, players, results) {
+                let report = `📅 ${getDateInfo()}\n\n`;
+                report += `🏟 ОПЛАТА ЗА ЗАЛ\n\n`;
+                report += `💳 Оплата:\n`;
+                report += `СБЕРБАНК / ТИНЬКОВ\n`;
+                report += `📞 +79264478622 Анастасия С\n\n`;
+                
+                report += `👥 Всего игроков: ${players}\n`;
+                report += `⏱ Всего часов: ${hours}\n\n`;
+                
+                report += `📊 Расчёт:\n`;
+                
+                // Сортируем по количеству часов (по возрастанию)
+                results.sort((a, b) => a.hours - b.hours);
+                
+                results.forEach(result => {
+                    report += `▫️ ${result.players} чел — ${result.hours} ч → ${result.costPerPlayer} ₽\n`;
+                });
+                
+                report += `\n✨ Хвостики и бонусы приветствуются!\n`;
+                report += `☕️ Покупаем спортинвентарь, чай и кофе\n`;
+                report += `🙏 Всем спасибо за игру!`;
+                
+                // Отображаем отчёт
+                reportBox.textContent = report;
+                
+                // Показываем секцию результатов
+                resultSection.style.display = 'block';
+                
+                // Сбрасываем статус отправки
+                resetTelegramButton();
+                
+                // Показываем кнопку "Назад" в Telegram Web App если нужно
+                if (isTelegramWebApp) {
+                    Telegram.WebApp.BackButton.show();
+                }
+                
+                // Прокручиваем к результатам
+                resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            
+            // Копирование результатов в буфер обмена
+            function copyToClipboard() {
+                const reportText = reportBox.textContent;
+                
+                // Копируем в буфер обмена
+                navigator.clipboard.writeText(reportText).then(() => {
+                    // Визуальная обратная связь
+                    const originalText = copyBtn.innerHTML;
+                    copyBtn.innerHTML = '<i class="fas fa-check"></i> Скопировано!';
+                    copyBtn.style.background = '#27ae60';
+                    
+                    // В Telegram Web App можно показать всплывающее сообщение
+                    if (isTelegramWebApp) {
+                        Telegram.WebApp.showPopup({
+                            title: 'Успешно',
+                            message: 'Результат скопирован в буфер обмена',
+                            buttons: [{ type: 'ok' }]
+                        });
+                    }
+                    
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalText;
+                        copyBtn.style.background = '';
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Ошибка копирования: ', err);
+                    alert('Не удалось скопировать текст');
+                });
+            }
+            
+            // Функция отправки в Telegram
+            async function sendToTelegram() {
+                const reportText = reportBox.textContent;
+                
+                // Проверяем наличие отчёта
+                if (!reportText || reportText.trim() === '') {
+                    showStatusMessage('Нет данных для отправки', 'error');
+                    return;
+                }
+                
+                // Проверяем наличие интернета
+                if (!navigator.onLine) {
+                    showStatusMessage('Нет подключения к интернету', 'error');
+                    return;
+                }
+                
+                // Показываем статус отправки
+                showSendingStatus();
+                
+                try {
+                    // Отправка через Telegram Bot API
+                    const url = `https://api.telegram.org/bot${TOKEN}/sendMessage`;
+                    
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            chat_id: CHAT_ID,
+                            message_thread_id: RESULT_THREAD_ID,
+                            text: reportText,
+                            parse_mode: 'Markdown'
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.ok) {
+                        showStatusMessage('✅ Отчёт успешно отправлен в Telegram!', 'success');
+                        showSuccessStatus();
+                        
+                        // Показываем уведомление в Telegram Web App
+                        if (isTelegramWebApp) {
+                            Telegram.WebApp.showPopup({
+                                title: 'Успешно',
+                                message: 'Отчёт отправлен в группу',
+                                buttons: [{ type: 'ok' }]
+                            });
+                        }
+                        
+                        // Через 3 секунды возвращаем нормальный вид кнопки
+                        setTimeout(resetTelegramButton, 3000);
+                    } else {
+                        console.error('Ошибка Telegram API:', data);
+                        showStatusMessage(`❌ Ошибка отправки: ${data.description || 'Неизвестная ошибка'}`, 'error');
+                        showErrorStatus();
+                    }
+                    
+                } catch (error) {
+                    console.error('Ошибка сети:', error);
+                    showStatusMessage('❌ Ошибка сети при отправке', 'error');
+                    showErrorStatus();
+                }
+            }
+            
+            // Вспомогательные функции для статуса отправки
+            function showSendingStatus() {
+                telegramBtn.classList.add('sending');
+                telegramBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Отправка...';
+                telegramBtn.disabled = true;
+                statusMessage.style.display = 'none';
+            }
+            
+            function showSuccessStatus() {
+                telegramBtn.classList.remove('sending');
+                telegramBtn.classList.add('success');
+                telegramBtn.innerHTML = '<i class="fas fa-check"></i> Отправлено!';
+                telegramBtn.disabled = false;
+            }
+            
+            function showErrorStatus() {
+                telegramBtn.classList.remove('sending');
+                telegramBtn.classList.add('error');
+                telegramBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Ошибка';
+                telegramBtn.disabled = false;
+                
+                // Через 3 секунды возвращаем нормальный вид
+                setTimeout(resetTelegramButton, 3000);
+            }
+            
+            function resetTelegramButton() {
+                telegramBtn.classList.remove('sending', 'success', 'error');
+                telegramBtn.innerHTML = '<i class="fab fa-telegram"></i> Отправить в Telegram';
+                telegramBtn.disabled = false;
+                statusMessage.style.display = 'none';
+            }
+            
+            function showStatusMessage(message, type = 'info') {
+                statusMessage.textContent = message;
+                statusMessage.className = 'status-message ' + type;
+                statusMessage.style.display = 'block';
+            }
+            
+            // Обработчики событий
+            hoursInput.addEventListener('input', generateHourFields);
+            hallPrice.addEventListener('input', updateValidation);
+            totalPlayers.addEventListener('input', updateValidation);
+            
+            calculateBtn.addEventListener('click', calculate);
+            copyBtn.addEventListener('click', copyToClipboard);
+            telegramBtn.addEventListener('click', sendToTelegram);
+            
+            // Предотвращаем масштабирование на мобильных устройствах
+            document.addEventListener('touchstart', function(e) {
+                if (e.touches.length > 1) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function(e) {
+                const now = (new Date()).getTime();
+                if (now - lastTouchEnd <= 300) {
+                    e.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, { passive: false });
+            
+            // Инициализация при загрузке - ВСЕ ПОЛЯ ПУСТЫЕ
+            generateHourFields();
+            
+            // Для тестирования примера можно раскомментировать:
+            /*
+            setTimeout(() => {
+                // Пример из задания для быстрого тестирования
+                hallPrice.value = "1500";
+                hoursInput.value = "5";
+                totalPlayers.value = "19";
+                generateHourFields();
+                
+                // Ввод данных: указываем сколько игроков сколько часов играли
+                const inputs = document.querySelectorAll('#hoursContainer input');
+                if (inputs[1]) inputs[1].value = 1;   // 2 часа
+                if (inputs[3]) inputs[3].value = 10;  // 4 часа
+                if (inputs[4]) inputs[4].value = 8;   // 5 часов
+                
+                updateValidation();
+            }, 100);
+            */
+        });
+    </script>
+</body>
+</html>
