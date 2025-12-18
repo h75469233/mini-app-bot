@@ -6,8 +6,16 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
-body { font-family: Arial; padding: 16px; }
-input { width: 100%; padding: 8px; margin-bottom: 10px; }
+body {
+  font-family: Arial;
+  padding: 16px;
+}
+
+input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+}
 
 button {
   width: 100%;
@@ -34,6 +42,7 @@ button.active {
 </head>
 
 <body>
+
 <h3 id="date"></h3>
 
 <input id="price" type="number" placeholder="💵 Цена зала за 1 час (700–10000)">
@@ -47,7 +56,6 @@ button.active {
 <button class="clear" onclick="clearAll()">🗑 Очистить данные</button>
 
 <script>
-
 const tg = window.Telegram.WebApp;
 tg.expand();
 
@@ -57,11 +65,18 @@ const days = ['ВОСКРЕСЕНЬЕ','ПОНЕДЕЛЬНИК','ВТОРНИК'
 document.getElementById('date').innerText =
   `📅 ${days[d.getDay()]} ${d.toLocaleDateString('ru-RU')}`;
 
-document.getElementById('hours').addEventListener('input', renderHours);
+/* элементы */
+const priceInput = document.getElementById('price');
+const hoursInput = document.getElementById('hours');
+const playersInput = document.getElementById('players');
+const previewBtn = document.getElementById('previewBtn');
+
+hoursInput.addEventListener('input', renderHours);
 document.querySelectorAll('input').forEach(i =>
   i.addEventListener('input', validate)
 );
 
+/* динамические часы */
 function renderHours() {
   const hours = Number(hoursInput.value);
   const div = document.getElementById('distribution');
@@ -79,6 +94,7 @@ function renderHours() {
     .forEach(i => i.addEventListener('input', validate));
 }
 
+/* валидация */
 function validate() {
   const price = Number(priceInput.value);
   const hours = Number(hoursInput.value);
@@ -94,7 +110,6 @@ function validate() {
   }
 
   if (sum !== players) return disable();
-
   enable();
 }
 
@@ -108,13 +123,8 @@ function disable() {
   previewBtn.classList.remove('active');
 }
 
+/* 🚀 ОТПРАВКА В GOOGLE APPS SCRIPT */
 function preview() {
-   if (!window.Telegram || !Telegram.WebApp) {
-    alert('❌ WebApp не инициализирован');
-    return;
-   }
-
-  console.log('sendData called');
   const data = {
     hallPrice: Number(priceInput.value),
     totalHours: Number(hoursInput.value),
@@ -123,24 +133,30 @@ function preview() {
   };
 
   for (let h = 1; h <= data.totalHours; h++) {
-    const v = Number(document.getElementById('h'+h).value || 0);
+    const v = Number(document.getElementById('h'+h)?.value || 0);
     if (v > 0) data.playersByHours[h] = v;
   }
 
-  Telegram.WebApp.sendData(JSON.stringify(data));
+  fetch('https://script.google.com/macros/s/AKfycbwsIhu2sXPsxdWbC7q8SdNNtIk3gCv2EA_sNojei6H5F3pLEAHdu3UrC7ri9-50EId83Q/exec', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      type: 'preview',
+      tg: tg.initDataUnsafe,
+      data
+    })
+  })
+  .then(() => tg.showAlert('📋 Предварительный отчёт отправлен в чат'))
+  .catch(() => tg.showAlert('❌ Ошибка отправки'));
 }
 
+/* очистка */
 function clearAll() {
   document.querySelectorAll('input').forEach(i => i.value = '');
   document.getElementById('distribution').innerHTML = '';
   disable();
 }
-
-/* удобные ссылки */
-const priceInput = document.getElementById('price');
-const hoursInput = document.getElementById('hours');
-const playersInput = document.getElementById('players');
-const previewBtn = document.getElementById('previewBtn');
 </script>
+
 </body>
 </html>
