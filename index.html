@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Чаркулятор</title>
+    <title>Чарчулятор</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Стили остаются без изменений */
+        /* Все предыдущие стили остаются */
         * {
             margin: 0;
             padding: 0;
@@ -26,8 +26,8 @@
             touch-action: pan-y;
         }
         
-        /* Стили контейнера доступа */
-        .access-denied-container {
+        /* Стили для экрана доступа */
+        .access-screen {
             background: white;
             border-radius: 20px;
             box-shadow: 0 15px 50px rgba(0,0,0,0.3);
@@ -38,27 +38,31 @@
             animation: slideUp 0.4s ease;
         }
         
-        .access-denied-icon {
+        .access-icon {
             font-size: 70px;
             color: #e74c3c;
             margin-bottom: 20px;
         }
         
-        .access-denied-title {
+        .access-icon.success {
+            color: #27ae60;
+        }
+        
+        .access-title {
             color: #333;
             font-size: 24px;
             margin-bottom: 15px;
             font-weight: 600;
         }
         
-        .access-denied-message {
+        .access-message {
             color: #666;
             font-size: 16px;
             margin-bottom: 30px;
             line-height: 1.5;
         }
         
-        .access-denied-btn {
+        .access-btn {
             background: #1a2980;
             color: white;
             border: none;
@@ -71,50 +75,38 @@
             display: inline-flex;
             align-items: center;
             gap: 10px;
+            margin-top: 20px;
         }
         
-        .access-denied-btn:hover {
+        .access-btn:hover {
             background: #162470;
             transform: translateY(-2px);
         }
         
-        /* Загрузочный экран */
-        .loading-container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 15px 50px rgba(0,0,0,0.3);
-            width: 100%;
-            max-width: 500px;
-            padding: 40px;
-            text-align: center;
-            animation: slideUp 0.4s ease;
+        .access-btn.secondary {
+            background: #95a5a6;
+            margin-left: 10px;
         }
         
-        .loading-spinner {
-            font-size: 50px;
-            color: #1a2980;
-            margin-bottom: 20px;
-            animation: spin 1s linear infinite;
+        .access-btn.secondary:hover {
+            background: #7f8c8d;
         }
         
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .loading-text {
-            color: #333;
-            font-size: 18px;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-        
-        .loading-subtext {
-            color: #666;
+        .user-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: monospace;
             font-size: 14px;
+            text-align: left;
         }
         
-        /* Остальные стили остаются без изменений */
+        .user-info div {
+            margin: 5px 0;
+        }
+        
+        /* Основной контейнер */
         .container {
             background: white;
             border-radius: 20px;
@@ -139,8 +131,7 @@
                 min-height: 100vh;
             }
             
-            .access-denied-container,
-            .loading-container {
+            .access-screen {
                 padding: 25px;
                 margin: 10px;
             }
@@ -698,26 +689,27 @@
     </style>
 </head>
 <body>
-    <!-- Экран загрузки -->
-    <div id="loadingContainer" class="loading-container" style="display: block;">
-        <div class="loading-spinner">
-            <i class="fas fa-spinner"></i>
+    <!-- Экран проверки доступа -->
+    <div class="access-screen" id="accessScreen">
+        <div class="access-icon" id="accessIcon">
+            <i class="fas fa-lock"></i>
         </div>
-        <div class="loading-text">Загрузка приложения...</div>
-        <div class="loading-subtext">Пожалуйста, подождите</div>
-    </div>
-    
-    <!-- Контейнер для сообщения об отказе в доступе -->
-    <div id="accessDeniedContainer" class="access-denied-container" style="display: none;">
-        <div class="access-denied-icon">
-            <i class="fas fa-ban"></i>
+        <h2 class="access-title" id="accessTitle">Проверка доступа</h2>
+        <div class="access-message" id="accessMessage">
+            Идет проверка вашего доступа к приложению...
         </div>
-        <h2 class="access-denied-title">🚫 Доступ запрещен</h2>
-        <p class="access-denied-message" id="accessDeniedMessage">
-            У вас нет доступа к этому приложению.
-        </p>
-        <button class="access-denied-btn" id="closeAppBtn">
-            <i class="fas fa-times"></i> Закрыть приложение
+        
+        <!-- Блок с информацией о пользователе (для отладки) -->
+        <div class="user-info" id="userInfo" style="display: none;">
+            <div><strong>Информация для отладки:</strong></div>
+            <div id="debugInfo">Загрузка...</div>
+        </div>
+        
+        <button class="access-btn" id="accessBtn" style="display: none;">
+            <i class="fas fa-check"></i> Продолжить
+        </button>
+        <button class="access-btn secondary" id="closeBtn" style="display: none;">
+            <i class="fas fa-times"></i> Закрыть
         </button>
     </div>
     
@@ -807,128 +799,89 @@
         const RESULT_THREAD_ID = 8;
         
         // Список разрешенных пользователей
-        const ALLOWED_USER_IDS = [
-            1157942871, // ID пользователя 1
-            5256755259  // ID пользователя 2
-        ];
-        
-        // Функция для проверки, находимся ли мы в Telegram Web App
-        function isTelegramWebApp() {
-            // Проверяем наличие объекта Telegram
-            if (typeof window.Telegram !== 'undefined' && 
-                typeof window.Telegram.WebApp !== 'undefined') {
-                return true;
-            }
-            
-            // Проверяем по URL параметрам (Telegram Web App добавляет их)
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('tgWebAppData') || urlParams.has('tgWebAppVersion')) {
-                return true;
-            }
-            
-            // Проверяем по хэшу (альтернативный способ)
-            if (window.location.hash.includes('tgWebApp')) {
-                return true;
-            }
-            
-            return false;
-        }
-        
-        // Функция ожидания загрузки Telegram Web App
-            function check() {
-                attempts++;
-                
-                if (typeof window.Telegram !== 'undefined' && 
-                    typeof window.Telegram.WebApp !== 'undefined') {
-                    // Telegram Web App загружен
-                    callback(true);
-                    return;
-                }
-                
-                if (attempts >= maxAttempts) {
-                    // Превышено максимальное количество попыток
-                    callback(false);
-                    return;
-                }
-                
-                // Продолжаем проверять
-                setTimeout(check, interval);
-            }
-            
-            check();
-        
+        const ALLOWED_USER_IDS = [1157942871, 5256755259];
         
         // Основная функция проверки доступа
         function checkAccess() {
-    if (!window.Telegram || !Telegram.WebApp) {
-        showAccessDenied(
-            "Откройте приложение через Telegram бота"
-        );
-        return Promise.resolve(false);
-    }
-
-    try {
-        Telegram.WebApp.ready();
-
-        const user = Telegram.WebApp.initDataUnsafe?.user;
-
-        if (!user || !user.id) {
-            showAccessDenied(
-                "Не удалось получить данные пользователя"
-            );
-            return Promise.resolve(false);
-        }
-
-        if (!ALLOWED_USER_IDS.includes(user.id)) {
-            showAccessDenied(
-                `ID: ${user.id}<br>У вас нет доступа`
-            );
-            return Promise.resolve(false);
-        }
-
-        return Promise.resolve(true);
-
-    } catch (e) {
-        console.error(e);
-        showAccessDenied(
-            "Ошибка инициализации Telegram Web App"
-        );
-        return Promise.resolve(false);
-    }
-}
-        
-        // Функция показа отказа в доступе
-        function showAccessDenied(message) {
-            hideLoading();
-            document.getElementById('accessDeniedMessage').innerHTML = message;
-            document.getElementById('accessDeniedContainer').style.display = 'block';
+            console.log("=== ПРОВЕРКА ДОСТУПА ===");
+            
+            // Показываем экран проверки
+            document.getElementById('accessScreen').style.display = 'block';
             document.getElementById('mainContainer').style.display = 'none';
             
-            // В Telegram Web App отключаем подтверждение закрытия
-            if (typeof window.Telegram !== 'undefined' && window.Telegram.WebApp) {
-                try {
-                    Telegram.WebApp.disableClosingConfirmation();
-                } catch (e) {
-                    console.error("Ошибка при отключении подтверждения закрытия:", e);
+            // Ждем немного для инициализации Telegram Web App
+            setTimeout(() => {
+                const isTelegramWebApp = window.Telegram && window.Telegram.WebApp;
+                
+                if (!isTelegramWebApp) {
+                    // Если не в Telegram Web App
+                    showAccessDenied("Это приложение доступно только в Telegram Web App.");
+                    return;
                 }
-            }
-        }
-        
-        // Функция скрытия экрана загрузки
-        function hideLoading() {
-            document.getElementById('loadingContainer').style.display = 'none';
-        }
-        
-        // Функция показа основного приложения
-        function showMainApp() {
-            hideLoading();
-            document.getElementById('accessDeniedContainer').style.display = 'none';
-            document.getElementById('mainContainer').style.display = 'block';
-            
-            // Инициализируем Telegram Web App
-            if (typeof window.Telegram !== 'undefined' && window.Telegram.WebApp) {
+                
                 try {
+                    // Инициализируем Telegram Web App
                     Telegram.WebApp.ready();
+                    
+                    // Получаем данные пользователя
+                    const user = Telegram.WebApp.initDataUnsafe?.user;
+                    
+                    if (!user) {
+                        showAccessDenied("Не удалось получить данные пользователя.");
+                        return;
+                    }
+                    
+                    const userId = user.id;
+                    const firstName = user.first_name || "Неизвестно";
+                    const username = user.username ? `@${user.username}` : "Не указан";
+                    
+                    // Показываем информацию для отладки
+                    document.getElementById('userInfo').style.display = 'block';
+                    document.getElementById('debugInfo').innerHTML = `
+                        ID: ${userId}<br>
+                        Имя: ${firstName}<br>
+                        Username: ${username}
+                    `;
+                    
+                    console.log("Информация о пользователе:", {
+                        id: userId,
+                        name: firstName,
+                        username: username
+                    });
+                    
+                    // Проверяем доступ по ID
+                    if (ALLOWED_USER_IDS.includes(userId)) {
+                        // Доступ разрешен
+                        showAccessGranted(firstName);
+                    } else {
+                        // Доступ запрещен
+                        showAccessDenied(`Пользователь ${firstName} (ID: ${userId}) не имеет доступа.`);
+                    }
+                    
+                } catch (error) {
+                    console.error("Ошибка при проверке доступа:", error);
+                    showAccessDenied("Произошла ошибка при проверке доступа.");
+                }
+            }, 500);
+        }
+        
+        // Функция показа успешного доступа
+        function showAccessGranted(userName) {
+            document.getElementById('accessIcon').className = 'access-icon success';
+            document.getElementById('accessIcon').innerHTML = '<i class="fas fa-check-circle"></i>';
+            document.getElementById('accessTitle').textContent = 'Доступ разрешён!';
+            document.getElementById('accessMessage').innerHTML = `
+                Привет, ${userName}!<br>
+                Добро пожаловать в Чарчулятор.
+            `;
+            
+            // Показываем кнопку продолжения
+            document.getElementById('accessBtn').style.display = 'inline-flex';
+            document.getElementById('closeBtn').style.display = 'none';
+            
+            // Настраиваем Telegram Web App
+            if (window.Telegram && Telegram.WebApp) {
+                try {
                     Telegram.WebApp.expand();
                     Telegram.WebApp.setHeaderColor('#1a2980');
                     Telegram.WebApp.setBackgroundColor('#f8f9fa');
@@ -938,57 +891,57 @@
                         if (document.getElementById('resultSection').style.display === 'block') {
                             document.getElementById('resultSection').style.display = 'none';
                             Telegram.WebApp.BackButton.hide();
-                        } else {
-                            Telegram.WebApp.close();
                         }
                     });
                 } catch (e) {
-                    console.error("Ошибка инициализации Telegram Web App:", e);
+                    console.error("Ошибка настройки Telegram Web App:", e);
                 }
             }
             
-            // Инициализируем основное приложение
+            // Обработчик кнопки продолжения
+            document.getElementById('accessBtn').onclick = function() {
+                startMainApp();
+            };
+        }
+        
+        // Функция показа отказа в доступе
+        function showAccessDenied(message) {
+            document.getElementById('accessIcon').className = 'access-icon';
+            document.getElementById('accessIcon').innerHTML = '<i class="fas fa-ban"></i>';
+            document.getElementById('accessTitle').textContent = 'Доступ запрещён';
+            document.getElementById('accessMessage').innerHTML = message;
+            
+            // Показываем кнопку закрытия
+            document.getElementById('accessBtn').style.display = 'none';
+            document.getElementById('closeBtn').style.display = 'inline-flex';
+            
+            // Обработчик кнопки закрытия
+            document.getElementById('closeBtn').onclick = function() {
+                if (window.Telegram && Telegram.WebApp) {
+                    Telegram.WebApp.close();
+                } else {
+                    document.getElementById('accessScreen').style.display = 'none';
+                    document.body.innerHTML = '<div style="text-align:center; padding: 40px;"><h2>Доступ запрещён</h2><p>Приложение доступно только в Telegram Web App.</p></div>';
+                }
+            };
+        }
+        
+        // Функция запуска основного приложения
+        function startMainApp() {
+            document.getElementById('accessScreen').style.display = 'none';
+            document.getElementById('mainContainer').style.display = 'block';
             initMainApp();
         }
         
         // Основная инициализация
         document.addEventListener('DOMContentLoaded', function() {
-            console.log("DOM загружен, начинаем проверку доступа");
-            
-            // Проверяем доступ
-            checkAccess().then((accessGranted) => {
-                if (accessGranted) {
-                    showMainApp();
-                }
-            }).catch((error) => {
-                console.error("Ошибка при проверке доступа:", error);
-                showAccessDenied("Произошла ошибка при проверке доступа.");
-            });
-            
-            // Обработчик кнопки закрытия приложения
-            document.getElementById('closeAppBtn').addEventListener('click', function() {
-                if (typeof window.Telegram !== 'undefined' && window.Telegram.WebApp) {
-                    try {
-                        Telegram.WebApp.close();
-                    } catch (e) {
-                        console.error("Ошибка при закрытии приложения:", e);
-                        hideAccessDenied();
-                    }
-                } else {
-                    // Если не в Telegram, просто скрываем сообщение
-                    hideAccessDenied();
-                }
-            });
+            // Проверяем доступ при загрузке
+            checkAccess();
         });
-        
-        // Функция скрытия сообщения об отказе в доступе
-        function hideAccessDenied() {
-            document.getElementById('accessDeniedContainer').style.display = 'none';
-        }
         
         // Инициализация основного приложения
         function initMainApp() {
-            console.log("Инициализация основного приложения");
+            console.log("=== ЗАПУСК ОСНОВНОГО ПРИЛОЖЕНИЯ ===");
             
             // Отображаем текущую дату
             function getDateInfo() {
@@ -1238,7 +1191,7 @@
                 resetTelegramButton();
                 
                 // Показываем кнопку "Назад" в Telegram Web App если нужно
-                if (typeof window.Telegram !== 'undefined' && window.Telegram.WebApp) {
+                if (window.Telegram && Telegram.WebApp) {
                     Telegram.WebApp.BackButton.show();
                 }
                 
@@ -1295,7 +1248,7 @@
                     showStatusMessage('Скопируйте текст вручную из поля выше', 'error');
                     
                     // В Telegram Web App можно показать всплывающее сообщение
-                    if (typeof window.Telegram !== 'undefined' && window.Telegram.WebApp) {
+                    if (window.Telegram && Telegram.WebApp) {
                         Telegram.WebApp.showPopup({
                             title: 'Скопируйте вручную',
                             message: 'Выделите текст выше и скопируйте',
@@ -1312,7 +1265,7 @@
                 copyBtn.innerHTML = '<i class="fas fa-check"></i> Скопировано!';
                 
                 // В Telegram Web App можно показать всплывающее сообщение
-                if (typeof window.Telegram !== 'undefined' && window.Telegram.WebApp) {
+                if (window.Telegram && Telegram.WebApp) {
                     Telegram.WebApp.showPopup({
                         title: 'Успешно',
                         message: 'Результат скопирован в буфер обмена',
@@ -1371,7 +1324,7 @@
                         showSuccessStatus();
                         
                         // Показываем уведомление в Telegram Web App
-                        if (typeof window.Telegram !== 'undefined' && window.Telegram.WebApp) {
+                        if (window.Telegram && Telegram.WebApp) {
                             Telegram.WebApp.showPopup({
                                 title: 'Успешно',
                                 message: 'Отчёт отправлен в группу',
@@ -1459,25 +1412,6 @@
             
             // Инициализация при загрузке - ВСЕ ПОЛЯ ПУСТЫЕ
             generateHourFields();
-            
-            // Для тестирования примера можно раскомментировать:
-            /*
-            setTimeout(() => {
-                // Пример из задания для быстрого тестирования
-                hallPrice.value = "1500";
-                hoursInput.value = "5";
-                totalPlayers.value = "19";
-                generateHourFields();
-                
-                // Ввод данных: указываем сколько игроков сколько часов играли
-                const inputs = document.querySelectorAll('#hoursContainer input');
-                if (inputs[1]) inputs[1].value = 1;   // 2 часа
-                if (inputs[3]) inputs[3].value = 10;  // 4 часа
-                if (inputs[4]) inputs[4].value = 8;   // 5 часов
-                
-                updateValidation();
-            }, 100);
-            */
         }
     </script>
 </body>
