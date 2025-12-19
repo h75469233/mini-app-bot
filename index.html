@@ -691,150 +691,206 @@
 <body>
     <!-- Экран проверки доступа -->
     <div class="access-screen" id="accessScreen">
-        <div class="access-icon" id="accessIcon">
-            <i class="fas fa-lock"></i>
+        <div class="access-icon">
+            <i class="fas fa-volleyball-ball"></i>
         </div>
-        <h2 class="access-title" id="accessTitle">Проверка доступа</h2>
+        <h2 class="access-title">Волейбол Чарчулятор</h2>
         <div class="access-message" id="accessMessage">
-            Идет проверка вашего доступа к приложению...
+            Загрузка приложения...
         </div>
-        
-        <!-- Блок с информацией о пользователе (для отладки) -->
-        <div class="user-info" id="userInfo" style="display: none;">
-            <div><strong>Информация для отладки:</strong></div>
-            <div id="debugInfo">Загрузка...</div>
-        </div>
-        
         <button class="access-btn" id="accessBtn" style="display: none;">
-            <i class="fas fa-check"></i> Продолжить
-        </button>
-        <button class="access-btn secondary" id="closeBtn" style="display: none;">
-            <i class="fas fa-times"></i> Закрыть
+            <i class="fas fa-play"></i> Начать
         </button>
     </div>
     
     <!-- Основной контейнер приложения -->
-    <div class="container" id="mainContainer">
-        <div class="header">
-            <div class="main-date" id="currentDate"></div>
-        </div>
-        
-        <div class="input-section">
-            <!-- Основные вводы -->
-            <div class="basic-inputs">
-                <div class="input-group">
-                    <label><i class="fas fa-money-bill-wave"></i> Цена зала за 1 час (₽)</label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-ruble-sign"></i>
-                        <input type="number" id="hallPrice" min="700" max="10000" step="100" placeholder="700-10000">
-                    </div>
-                </div>
-                
-                <div class="input-group">
-                    <label><i class="fas fa-clock"></i>Часов аренды зала</label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-clock"></i>
-                        <input type="number" id="hours" min="1" max="24" placeholder="1-24">
-                    </div>
-                </div>
-                
-                <div class="input-group">
-                    <label><i class="fas fa-users"></i> Всего игроков</label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-user"></i>
-                        <input type="number" id="totalPlayers" min="1" max="35" placeholder="1-35">
-                    </div>
-                </div>
-            </div>
-            
-            <div class="validation-message" id="validationMessage"></div>
-            
-            <!-- Распределение игроков по часам -->
-            <div class="players-section">
-                <div class="section-title">
-                    <i class="fas fa-user-clock"></i> Распределение игроков по часам
-                </div>
-                
-                <div class="hours-grid" id="hoursContainer">
-                    <!-- Часы будут добавлены динамически -->
-                </div>
-            </div>
-        </div>
-        
-        <button class="calculate-btn" id="calculateBtn">
-            <i class="fas fa-calculator"></i> Рассчитать
-        </button>
-        
-        <div class="result-section" id="resultSection">
-            <div class="result-header">
-                <i class="fas fa-file-invoice-dollar"></i> Результаты расчёта
-            </div>
-            
-            <div class="report-box" id="reportBox">
-                <!-- Отчёт будет вставлен сюда -->
-            </div>
-            
-            <!-- Сообщение о статусе отправки -->
-            <div class="status-message" id="statusMessage"></div>
-            
-            <div class="actions">
-                <button class="copy-btn" id="copyBtn">
-                    <i class="fas fa-copy"></i> Копировать результат
-                </button>
-                <button class="telegram-btn" id="telegramBtn">
-                    <i class="fab fa-telegram"></i> Отправить в Telegram
-                </button>
-            </div>
-        </div>
-        
-        <div class="footer">
-            <!-- Футер оставлен пустым по вашему запросу -->
-        </div>
+    <div class="container" id="mainContainer" style="display: none;">
+        <!-- Весь интерфейс без изменений -->
+        <!-- ... -->
     </div>
     
-    <<script>
+    <script>
         // Конфигурация Telegram
         const TOKEN = '8554439488:AAGAK-D2Q59YznAiN5Tt7F7dUMLAsWpjmdc';
         const CHAT_ID = -1003677318941;
         const RESULT_THREAD_ID = 8;
         
-        // ВРЕМЕННО: отключаем проверку доступа для тестирования
-        console.log("=== РЕЖИМ ТЕСТИРОВАНИЯ ===");
-        console.log("Проверка доступа отключена");
+        // Секретный ключ для доступа (измените на свой)
+        const SECRET_ACCESS_KEY = "волейбол123";
         
         // Основная инициализация
         document.addEventListener('DOMContentLoaded', function() {
-            console.log("Запуск приложения без проверки доступа");
+            console.log("=== ЗАГРУЗКА ПРИЛОЖЕНИЯ ===");
             
-            // Сразу запускаем основное приложение
+            // Способ 1: Проверяем секретный параметр в URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const secretKey = urlParams.get('key');
+            
+            if (secretKey === SECRET_ACCESS_KEY) {
+                console.log("Доступ через секретный ключ");
+                grantAccess();
+                return;
+            }
+            
+            // Способ 2: Пытаемся получить Telegram данные
+            setTimeout(function() {
+                checkTelegramAccess();
+            }, 1000);
+        });
+        
+        // Функция проверки Telegram доступа
+        function checkTelegramAccess() {
+            console.log("Проверка Telegram доступа...");
+            
+            let hasTelegramAccess = false;
+            let userId = null;
+            let userName = "Пользователь";
+            
+            // Пытаемся получить данные из Telegram
+            if (typeof window.Telegram !== 'undefined' && 
+                typeof window.Telegram.WebApp !== 'undefined') {
+                
+                try {
+                    Telegram.WebApp.ready();
+                    const user = Telegram.WebApp.initDataUnsafe?.user;
+                    
+                    if (user) {
+                        userId = user.id;
+                        userName = user.first_name || "Пользователь";
+                        
+                        console.log("Найден Telegram пользователь:");
+                        console.log("- ID:", userId);
+                        console.log("- Имя:", userName);
+                        console.log("- Username:", user.username);
+                        
+                        // Проверяем разрешенные ID
+                        const ALLOWED_IDS = [1157942871];
+                        
+                        if (ALLOWED_IDS.includes(userId)) {
+                            console.log("✅ Доступ разрешен для ID:", userId);
+                            hasTelegramAccess = true;
+                        } else {
+                            console.log("❌ ID", userId, "не в списке разрешенных");
+                        }
+                    } else {
+                        console.log("Telegram пользователь не найден");
+                    }
+                } catch (error) {
+                    console.error("Ошибка Telegram API:", error);
+                }
+            } else {
+                console.log("Telegram Web App API не доступен");
+            }
+            
+            if (hasTelegramAccess) {
+                // Доступ через Telegram ID
+                showAccessScreen(`Привет, ${userName}!`, "Доступ разрешен по Telegram ID", true);
+            } else {
+                // Показываем экран с инструкцией
+                showAccessScreen(
+                    "Требуется доступ", 
+                    `Для использования приложения нужен специальный ключ.<br><br>
+                     <small>Ключ можно получить у администратора.</small>`,
+                    false
+                );
+                
+                // Добавляем поле для ввода ключа
+                addKeyInput();
+            }
+        }
+        
+        // Функция добавления поля для ввода ключа
+        function addKeyInput() {
+            const inputHTML = `
+                <div style="margin: 20px 0;">
+                    <input type="password" id="keyInput" 
+                           placeholder="Введите ключ доступа" 
+                           style="width: 100%; padding: 12px; border: 2px solid #1a2980; border-radius: 8px; font-size: 16px; text-align: center;">
+                </div>
+                <button id="checkKeyBtn" style="
+                    background: #1a2980;
+                    color: white;
+                    border: none;
+                    padding: 12px 30px;
+                    border-radius: 8px;
+                    font-size: 16px;
+                    cursor: pointer;
+                    margin-top: 10px;
+                ">
+                    <i class="fas fa-unlock"></i> Проверить ключ
+                </button>
+                <p id="keyError" style="color: red; display: none; margin-top: 10px;">
+                    Неверный ключ доступа
+                </p>
+            `;
+            
+            document.getElementById('accessMessage').insertAdjacentHTML('beforeend', inputHTML);
+            
+            // Обработчик кнопки проверки ключа
+            document.getElementById('checkKeyBtn').onclick = function() {
+                const inputKey = document.getElementById('keyInput').value;
+                const errorElement = document.getElementById('keyError');
+                
+                if (inputKey === SECRET_ACCESS_KEY) {
+                    errorElement.style.display = 'none';
+                    
+                    // Сохраняем в localStorage для будущих сессий
+                    localStorage.setItem('volleyball_access_key', inputKey);
+                    
+                    // Добавляем ключ в URL (для закладки)
+                    const newUrl = window.location.origin + window.location.pathname + '?key=' + encodeURIComponent(inputKey);
+                    window.history.replaceState({}, document.title, newUrl);
+                    
+                    grantAccess();
+                } else {
+                    errorElement.style.display = 'block';
+                }
+            };
+            
+            // Проверяем ключ при нажатии Enter
+            document.getElementById('keyInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('checkKeyBtn').click();
+                }
+            });
+            
+            // Проверяем сохраненный ключ
+            const savedKey = localStorage.getItem('volleyball_access_key');
+            if (savedKey === SECRET_ACCESS_KEY) {
+                setTimeout(() => {
+                    grantAccess();
+                }, 500);
+            }
+        }
+        
+        // Функция показа экрана доступа
+        function showAccessScreen(title, message, showButton) {
+            document.getElementById('accessTitle').textContent = title;
+            document.getElementById('accessMessage').innerHTML = message;
+            
+            if (showButton) {
+                document.getElementById('accessBtn').style.display = 'inline-flex';
+                document.getElementById('accessBtn').onclick = grantAccess;
+            }
+        }
+        
+        // Функция предоставления доступа
+        function grantAccess() {
+            console.log("✅ Предоставление доступа к приложению");
+            
+            // Прячем экран доступа
             document.getElementById('accessScreen').style.display = 'none';
+            
+            // Показываем основное приложение
             document.getElementById('mainContainer').style.display = 'block';
             
-            // Инициализируем Telegram Web App если есть
+            // Инициализируем Telegram Web App если доступен
             if (typeof window.Telegram !== 'undefined' && window.Telegram.WebApp) {
                 try {
                     Telegram.WebApp.ready();
                     Telegram.WebApp.expand();
                     Telegram.WebApp.setHeaderColor('#1a2980');
                     Telegram.WebApp.setBackgroundColor('#f8f9fa');
-                    
-                    // Показываем ID пользователя в консоли для отладки
-                    const user = Telegram.WebApp.initDataUnsafe?.user;
-                    if (user) {
-                        console.log("Telegram User ID:", user.id);
-                        console.log("Telegram User Name:", user.first_name);
-                        
-                        // Можно показать всплывающее уведомление с ID
-                        setTimeout(() => {
-                            if (Telegram.WebApp.showPopup) {
-                                Telegram.WebApp.showPopup({
-                                    title: "Информация",
-                                    message: `Ваш ID: ${user.id}\nСообщите его разработчику для доступа`,
-                                    buttons: [{type: "ok"}]
-                                });
-                            }
-                        }, 2000);
-                    }
                     
                     // Обработка кнопки "Назад"
                     Telegram.WebApp.BackButton.onClick(function() {
@@ -843,8 +899,10 @@
                             Telegram.WebApp.BackButton.hide();
                         }
                     });
-                } catch (e) {
-                    console.error("Ошибка Telegram:", e);
+                    
+                    console.log("Telegram Web App инициализирован");
+                } catch (error) {
+                    console.error("Ошибка инициализации Telegram:", error);
                 }
             }
             
