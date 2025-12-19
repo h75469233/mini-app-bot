@@ -628,6 +628,47 @@
                 font-size: 16px !important;
             }
         }
+        
+        /* Стили для поля ввода кода доступа */
+        .access-code-section {
+            text-align: center;
+            padding: 30px 20px;
+            display: none;
+        }
+        
+        .access-code-input {
+            width: 200px;
+            padding: 12px 15px;
+            border: 2px solid #1a2980;
+            border-radius: 8px;
+            font-size: 16px;
+            text-align: center;
+            margin: 20px auto;
+            display: block;
+        }
+        
+        .access-code-btn {
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .access-code-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(26, 41, 128, 0.3);
+        }
+        
+        .access-error {
+            color: #e74c3c;
+            margin-top: 10px;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -636,7 +677,7 @@
             <div class="main-date" id="currentDate"></div>
         </div>
         
-        <!-- НОВЫЙ ЭКРАН ПРИВЕТСТВИЯ ДЛЯ НЕ-АДМИНОВ -->
+        <!-- ЭКРАН ПРИВЕТСТВИЯ ДЛЯ НЕ-АДМИНОВ -->
         <div class="welcome-screen" id="welcomeScreen">
             <div class="welcome-icon">
                 <i class="fas fa-hand-wave"></i>
@@ -646,6 +687,27 @@
             </div>
             <div class="welcome-subtitle">
                 Для расчётов обратитесь к администратору
+            </div>
+        </div>
+        
+        <!-- ЭКРАН ВВОДА КОДА ДОСТУПА (для браузерной версии) -->
+        <div class="access-code-section" id="accessCodeSection">
+            <div class="welcome-icon">
+                <i class="fas fa-lock"></i>
+            </div>
+            <div class="welcome-message">
+                Доступ ограничен
+            </div>
+            <div class="welcome-subtitle">
+                Введите код доступа для продолжения
+            </div>
+            <input type="password" class="access-code-input" id="accessCodeInput" 
+                   placeholder="Код доступа" maxlength="6">
+            <button class="access-code-btn" id="accessCodeBtn">
+                <i class="fas fa-key"></i> Войти
+            </button>
+            <div class="access-error" id="accessError">
+                ❌ Неверный код доступа
             </div>
         </div>
         
@@ -732,46 +794,61 @@
         const RESULT_THREAD_ID = 8;
         
         // СПИСОК АДМИНИСТРАТОРОВ (как в исходном коде)
-        const ADMIN_IDS = [1234567891, 5256755259];
+        const ADMIN_IDS = [1157942871, 5256755259];
+        // КОД ДОСТУПА ДЛЯ БРАУЗЕРНОЙ ВЕРСИИ
+        const ACCESS_CODE = "admin123"; // Измените этот код на свой
         
         // Текущий пользователь
         let currentUserId = null;
         let isAdmin = false;
         let userName = 'Гость';
         
-        // Оптимизация для Telegram Web App
-        const isTelegramWebApp = window.Telegram && window.Telegram.WebApp;
+        // Флаг для отслеживания Web App
+        let isTelegramWebApp = false;
         
         // Инициализация приложения
         function initApp() {
             // Отображаем текущую дату
             document.getElementById('currentDate').textContent = getDateInfo();
             
-            if (isTelegramWebApp) {
+            // Проверяем, запущено ли в Telegram Web App
+            if (window.Telegram && window.Telegram.WebApp) {
+                isTelegramWebApp = true;
                 initTelegramWebApp();
             } else {
-                // Для браузера: всегда показываем админскую версию
-                showAdminInterface();
+                // Браузерная версия - показываем ввод кода доступа
+                showAccessCodeScreen();
             }
         }
         
         // Инициализация Telegram Web App
         function initTelegramWebApp() {
-            Telegram.WebApp.ready();
-            Telegram.WebApp.expand();
+            const tg = window.Telegram.WebApp;
+            tg.ready();
+            tg.expand();
             
             // Настраиваем цвета
-            Telegram.WebApp.setHeaderColor('#1a2980');
-            Telegram.WebApp.setBackgroundColor('#f8f9fa');
+            tg.setHeaderColor('#1a2980');
+            tg.setBackgroundColor('#f8f9fa');
             
-            // Получаем данные пользователя
-            const user = Telegram.WebApp.initDataUnsafe.user;
-            if (user) {
+            // Получаем данные пользователя ПРАВИЛЬНО
+            const initData = tg.initData;
+            const initDataUnsafe = tg.initDataUnsafe;
+            
+            console.log('Telegram WebApp initDataUnsafe:', initDataUnsafe);
+            console.log('Telegram WebApp initData:', initData);
+            
+            if (initDataUnsafe && initDataUnsafe.user) {
+                const user = initDataUnsafe.user;
                 currentUserId = user.id;
                 userName = user.first_name || 'Пользователь';
                 
+                console.log('ID пользователя Telegram:', currentUserId);
+                console.log('Имя пользователя:', userName);
+                
                 // Проверяем, является ли пользователь админом
                 isAdmin = ADMIN_IDS.includes(currentUserId);
+                console.log('Проверка админа:', isAdmin, 'ID:', currentUserId, 'Админы:', ADMIN_IDS);
                 
                 // Показываем соответствующий интерфейс
                 if (isAdmin) {
@@ -780,36 +857,67 @@
                     showWelcomeScreen();
                 }
             } else {
-                // Если нет данных пользователя, показываем приветствие
+                // Если нет данных пользователя
+                console.warn('Нет данных пользователя Telegram');
+                
+                // Пробуем получить данные из URL или других источников
+                try {
+                    // Парсим init_data из URL, если есть
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const initDataParam = urlParams.get('tgWebAppData');
+                    
+                    if (initDataParam) {
+                        console.log('Попытка парсинга init_data из URL');
+                        // Пытаемся найти user_id в строке init_data
+                        const userMatch = initDataParam.match(/user=%7B%22id%22%3A(\d+)/);
+                        if (userMatch && userMatch[1]) {
+                            currentUserId = parseInt(userMatch[1]);
+                            isAdmin = ADMIN_IDS.includes(currentUserId);
+                            console.log('Найден ID из URL:', currentUserId, 'Админ:', isAdmin);
+                            
+                            if (isAdmin) {
+                                showAdminInterface();
+                                return;
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.error('Ошибка парсинга данных:', e);
+                }
+                
+                // Если ничего не получилось, показываем приветствие
                 showWelcomeScreen();
             }
             
             // Обработка кнопки "Назад"
-            Telegram.WebApp.BackButton.onClick(function() {
+            tg.BackButton.onClick(function() {
                 if (document.getElementById('resultSection').style.display === 'block') {
                     // Если открыты результаты, скрываем их
                     document.getElementById('resultSection').style.display = 'none';
-                    Telegram.WebApp.BackButton.hide();
+                    tg.BackButton.hide();
                 } else {
-                    Telegram.WebApp.close();
+                    tg.close();
                 }
             });
         }
         
         // Показать интерфейс для администраторов
         function showAdminInterface() {
+            // Скрываем все остальные экраны
             document.getElementById('welcomeScreen').style.display = 'none';
+            document.getElementById('accessCodeSection').style.display = 'none';
             document.getElementById('adminSection').style.display = 'block';
             
             // Если это админ из Telegram Web App, показываем специальное приветствие
             if (isTelegramWebApp && isAdmin) {
-                const welcomeElement = document.createElement('div');
-                welcomeElement.className = 'welcome-admin-message';
-                welcomeElement.style.cssText = 'text-align: center; margin-bottom: 20px; padding: 10px; background: #e8f5e9; border-radius: 10px; border-left: 4px solid #27ae60;';
-                welcomeElement.innerHTML = `<strong>👋 Приветствую, ${userName}!</strong><br>Давай начнем расчёт.`;
+                const adminWelcome = document.createElement('div');
+                adminWelcome.className = 'validation-message success';
+                adminWelcome.style.cssText = 'margin-bottom: 20px; text-align: center;';
+                adminWelcome.innerHTML = `<strong>👋 Приветствую, ${userName}!</strong><br>Давай начнем расчёт.`;
                 
                 const adminSection = document.getElementById('adminSection');
-                adminSection.insertBefore(welcomeElement, adminSection.firstChild);
+                const inputSection = document.querySelector('.input-section');
+                adminSection.insertBefore(adminWelcome, inputSection);
             }
             
             initAdminInterface();
@@ -818,10 +926,11 @@
         // Показать экран приветствия для не-админов
         function showWelcomeScreen() {
             document.getElementById('welcomeScreen').style.display = 'block';
+            document.getElementById('accessCodeSection').style.display = 'none';
             document.getElementById('adminSection').style.display = 'none';
             
             // Устанавливаем приветственное сообщение
-            document.getElementById('welcomeMessage').textContent = `👋 Приветствую, ${userName}!`;
+            document.getElementById('welcomeMessage').textContent = `👋 Приветствую, ${userName || 'Гость'}!`;
             
             // В Telegram Web App можно добавить кнопку для закрытия
             if (isTelegramWebApp) {
@@ -832,6 +941,33 @@
                         buttons: [{ type: 'ok' }]
                     });
                 }, 500);
+            }
+        }
+        
+        // Показать экран ввода кода доступа
+        function showAccessCodeScreen() {
+            document.getElementById('welcomeScreen').style.display = 'none';
+            document.getElementById('accessCodeSection').style.display = 'block';
+            document.getElementById('adminSection').style.display = 'none';
+        }
+        
+        // Проверка кода доступа
+        function checkAccessCode() {
+            const inputCode = document.getElementById('accessCodeInput').value;
+            const errorElement = document.getElementById('accessError');
+            
+            if (inputCode === ACCESS_CODE) {
+                isAdmin = true;
+                showAdminInterface();
+            } else {
+                errorElement.style.display = 'block';
+                document.getElementById('accessCodeInput').value = '';
+                document.getElementById('accessCodeInput').focus();
+                
+                // Автоматически скрыть ошибку через 3 секунды
+                setTimeout(() => {
+                    errorElement.style.display = 'none';
+                }, 3000);
             }
         }
         
@@ -1272,6 +1408,14 @@
             copyBtn.addEventListener('click', copyToClipboard);
             telegramBtn.addEventListener('click', sendToTelegram);
             
+            // Обработчики для кода доступа
+            document.getElementById('accessCodeBtn').addEventListener('click', checkAccessCode);
+            document.getElementById('accessCodeInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    checkAccessCode();
+                }
+            });
+            
             // Предотвращаем масштабирование на мобильных устройствах
             document.addEventListener('touchstart', function(e) {
                 if (e.touches.length > 1) {
@@ -1310,4 +1454,3 @@
     </script>
 </body>
 </html>
-
