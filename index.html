@@ -103,27 +103,27 @@
             }
         }
         
-        /* НОВЫЕ СТИЛИ ДЛЯ ЭКРАНА ПРИВЕТСТВИЯ */
-        .welcome-screen {
+        /* СТИЛИ ДЛЯ ЭКРАНОВ */
+        .screen {
+            display: none;
             text-align: center;
             padding: 40px 20px;
-            display: none;
         }
         
-        .welcome-icon {
+        .screen-icon {
             font-size: 60px;
             color: #1a2980;
             margin-bottom: 20px;
         }
         
-        .welcome-message {
+        .screen-message {
             font-size: 24px;
             color: #333;
             margin-bottom: 30px;
             line-height: 1.4;
         }
         
-        .welcome-subtitle {
+        .screen-subtitle {
             font-size: 16px;
             color: #666;
             margin-top: 20px;
@@ -441,7 +441,7 @@
             }
         }
         
-        /* ИЗМЕНЕН ЦВЕТ КНОПКИ КОПИРОВАНИЯ - оранжевый/желтый */
+        /* КНОПКА КОПИРОВАНИЯ */
         .copy-btn {
             background: linear-gradient(135deg, #ff9800 0%, #ffb74d 100%);
             color: white;
@@ -478,7 +478,7 @@
             background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
         }
         
-        /* Новая кнопка для отправки в Telegram */
+        /* КНОПКА TELEGRAM */
         .telegram-btn {
             background: linear-gradient(135deg, #0088cc 0%, #1e96c8 100%);
             color: white;
@@ -571,7 +571,7 @@
             border-left-color: #27ae60;
         }
         
-        /* Сообщение о статусе отправки */
+        /* СТАТУС ОТПРАВКИ */
         .status-message {
             background: #e3f2fd;
             border-radius: 10px;
@@ -602,40 +602,7 @@
             border-left-color: #f44336;
         }
         
-        /* Улучшение для маленьких экранов */
-        @media (max-width: 400px) {
-            .hours-grid {
-                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            }
-            
-            .hour-group {
-                padding: 12px;
-            }
-            
-            .hour-title {
-                font-size: 13px;
-            }
-            
-            .hour-input {
-                padding: 6px;
-                font-size: 14px;
-            }
-        }
-        
-        /* Предотвращение zoom на iOS при фокусе */
-        @media screen and (max-width: 768px) {
-            input, textarea, select {
-                font-size: 16px !important;
-            }
-        }
-        
-        /* Стили для поля ввода кода доступа */
-        .access-code-section {
-            text-align: center;
-            padding: 30px 20px;
-            display: none;
-        }
-        
+        /* ПОЛЕ ВВОДА КОДА */
         .access-code-input {
             width: 200px;
             padding: 12px 15px;
@@ -669,36 +636,63 @@
             margin-top: 10px;
             display: none;
         }
+        
+        /* Улучшение для маленьких экранов */
+        @media (max-width: 400px) {
+            .hours-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
+            
+            .hour-group {
+                padding: 12px;
+            }
+            
+            .hour-title {
+                font-size: 13px;
+            }
+            
+            .hour-input {
+                padding: 6px;
+                font-size: 14px;
+            }
+        }
+        
+        @media screen and (max-width: 768px) {
+            input, textarea, select {
+                font-size: 16px !important;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <div class="main-date" id="currentDate"></div>
+            <div id="debugInfo" style="font-size: 12px; color: #888; margin-top: 5px;"></div>
         </div>
         
         <!-- ЭКРАН ПРИВЕТСТВИЯ ДЛЯ НЕ-АДМИНОВ -->
-        <div class="welcome-screen" id="welcomeScreen">
-            <div class="welcome-icon">
+        <div class="screen" id="welcomeScreen">
+            <div class="screen-icon">
                 <i class="fas fa-hand-wave"></i>
             </div>
-            <div class="welcome-message" id="welcomeMessage">
-                Приветствие загружается...
+            <div class="screen-message" id="welcomeMessage">
+                Загрузка...
             </div>
-            <div class="welcome-subtitle">
+            <div class="screen-subtitle">
                 Для расчётов обратитесь к администратору
             </div>
         </div>
         
-        <!-- ЭКРАН ВВОДА КОДА ДОСТУПА (для браузерной версии) -->
-        <div class="access-code-section" id="accessCodeSection">
-            <div class="welcome-icon">
+        <!-- ЭКРАН ВВОДА КОДА ДОСТУПА -->
+        <div class="screen" id="accessCodeScreen">
+            <div class="screen-icon">
                 <i class="fas fa-lock"></i>
             </div>
-            <div class="welcome-message">
+            <div class="screen-message">
                 Доступ ограничен
             </div>
-            <div class="welcome-subtitle">
+            <div class="screen-subtitle">
                 Введите код доступа для продолжения
             </div>
             <input type="password" class="access-code-input" id="accessCodeInput" 
@@ -793,87 +787,129 @@
         const CHAT_ID = -1003677318941;
         const RESULT_THREAD_ID = 8;
         
-        // СПИСОК АДМИНИСТРАТОРОВ (как в исходном коде)
+        // СПИСОК АДМИНИСТРАТОРОВ
         const ADMIN_IDS = [1157942871, 5256755259];
         // КОД ДОСТУПА ДЛЯ БРАУЗЕРНОЙ ВЕРСИИ
-        const ACCESS_CODE = "admin123"; // Измените этот код на свой
+        const ACCESS_CODE = "admin123"; // Измените на свой код
         
-        // Текущий пользователь
+        // Переменные состояния
         let currentUserId = null;
         let isAdmin = false;
         let userName = 'Гость';
-        
-        // Флаг для отслеживания Web App
         let isTelegramWebApp = false;
         
-        // Инициализация приложения
+        // Главная функция инициализации
+        document.addEventListener('DOMContentLoaded', function() {
+            initApp();
+        });
+        
         function initApp() {
-            // Отображаем текущую дату
+            // Устанавливаем дату
             document.getElementById('currentDate').textContent = getDateInfo();
             
             // Проверяем, запущено ли в Telegram Web App
+            checkTelegramWebApp();
+        }
+        
+        function checkTelegramWebApp() {
+            // Более надежная проверка Telegram Web App
             if (window.Telegram && window.Telegram.WebApp) {
+                console.log('Telegram Web App обнаружен');
                 isTelegramWebApp = true;
                 initTelegramWebApp();
             } else {
-                // Браузерная версия - показываем ввод кода доступа
+                console.log('Telegram Web App не обнаружен, используем браузерную версию');
+                // Проверяем параметры URL на наличие данных Telegram
+                checkUrlForTelegramData();
+            }
+        }
+        
+        function initTelegramWebApp() {
+            try {
+                const tg = window.Telegram.WebApp;
+                
+                // Включаем отладочную информацию
+                document.getElementById('debugInfo').textContent = 'Telegram Web App активен';
+                
+                // Инициализируем Web App
+                tg.ready();
+                tg.expand();
+                
+                // Настраиваем внешний вид
+                tg.setHeaderColor('#1a2980');
+                tg.setBackgroundColor('#f8f9fa');
+                
+                // Получаем данные пользователя
+                const user = tg.initDataUnsafe?.user;
+                console.log('Данные пользователя Telegram:', user);
+                
+                if (user && user.id) {
+                    currentUserId = user.id;
+                    userName = user.first_name || user.username || 'Пользователь';
+                    
+                    // Показываем информацию для отладки
+                    document.getElementById('debugInfo').textContent = 
+                        `Telegram Web App | ID: ${currentUserId} | Имя: ${userName}`;
+                    
+                    console.log(`ID пользователя: ${currentUserId}, Имя: ${userName}`);
+                    
+                    // Проверяем права доступа
+                    isAdmin = ADMIN_IDS.includes(currentUserId);
+                    console.log(`Проверка админа: ${isAdmin} (админы: ${ADMIN_IDS.join(', ')})`);
+                    
+                    // Показываем соответствующий экран
+                    if (isAdmin) {
+                        showAdminInterface();
+                    } else {
+                        showWelcomeScreen();
+                    }
+                } else {
+                    // Если данных пользователя нет
+                    console.warn('Нет данных пользователя в Telegram Web App');
+                    document.getElementById('debugInfo').textContent = 
+                        'Telegram Web App: нет данных пользователя';
+                    showAccessCodeScreen();
+                }
+                
+                // Настраиваем кнопку "Назад"
+                tg.BackButton.onClick(function() {
+                    if (document.getElementById('resultSection').style.display === 'block') {
+                        document.getElementById('resultSection').style.display = 'none';
+                        tg.BackButton.hide();
+                    } else {
+                        tg.close();
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Ошибка инициализации Telegram Web App:', error);
+                document.getElementById('debugInfo').textContent = 
+                    'Ошибка Telegram Web App: ' + error.message;
                 showAccessCodeScreen();
             }
         }
         
-        // Инициализация Telegram Web App
-        function initTelegramWebApp() {
-            const tg = window.Telegram.WebApp;
-            tg.ready();
-            tg.expand();
+        function checkUrlForTelegramData() {
+            // Проверяем URL на наличие параметров Telegram
+            const urlParams = new URLSearchParams(window.location.search);
+            const tgWebAppData = urlParams.get('tgWebAppData');
             
-            // Настраиваем цвета
-            tg.setHeaderColor('#1a2980');
-            tg.setBackgroundColor('#f8f9fa');
-            
-            // Получаем данные пользователя ПРАВИЛЬНО
-            const initData = tg.initData;
-            const initDataUnsafe = tg.initDataUnsafe;
-            
-            console.log('Telegram WebApp initDataUnsafe:', initDataUnsafe);
-            console.log('Telegram WebApp initData:', initData);
-            
-            if (initDataUnsafe && initDataUnsafe.user) {
-                const user = initDataUnsafe.user;
-                currentUserId = user.id;
-                userName = user.first_name || 'Пользователь';
-                
-                console.log('ID пользователя Telegram:', currentUserId);
-                console.log('Имя пользователя:', userName);
-                
-                // Проверяем, является ли пользователь админом
-                isAdmin = ADMIN_IDS.includes(currentUserId);
-                console.log('Проверка админа:', isAdmin, 'ID:', currentUserId, 'Админы:', ADMIN_IDS);
-                
-                // Показываем соответствующий интерфейс
-                if (isAdmin) {
-                    showAdminInterface();
-                } else {
-                    showWelcomeScreen();
-                }
-            } else {
-                // Если нет данных пользователя
-                console.warn('Нет данных пользователя Telegram');
-                
-                // Пробуем получить данные из URL или других источников
+            if (tgWebAppData) {
+                console.log('Найдены данные Telegram в URL');
                 try {
-                    // Парсим init_data из URL, если есть
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const initDataParam = urlParams.get('tgWebAppData');
+                    // Пытаемся извлечь user_id из строки параметров
+                    const params = new URLSearchParams(tgWebAppData);
+                    const userParam = params.get('user');
                     
-                    if (initDataParam) {
-                        console.log('Попытка парсинга init_data из URL');
-                        // Пытаемся найти user_id в строке init_data
-                        const userMatch = initDataParam.match(/user=%7B%22id%22%3A(\d+)/);
-                        if (userMatch && userMatch[1]) {
-                            currentUserId = parseInt(userMatch[1]);
+                    if (userParam) {
+                        const userData = JSON.parse(decodeURIComponent(userParam));
+                        if (userData && userData.id) {
+                            currentUserId = userData.id;
+                            userName = userData.first_name || 'Пользователь';
                             isAdmin = ADMIN_IDS.includes(currentUserId);
-                            console.log('Найден ID из URL:', currentUserId, 'Админ:', isAdmin);
+                            
+                            document.getElementById('debugInfo').textContent = 
+                                `Telegram (URL) | ID: ${currentUserId}`;
                             
                             if (isAdmin) {
                                 showAdminInterface();
@@ -882,34 +918,50 @@
                         }
                     }
                 } catch (e) {
-                    console.error('Ошибка парсинга данных:', e);
+                    console.warn('Не удалось распарсить данные Telegram из URL:', e);
                 }
-                
-                // Если ничего не получилось, показываем приветствие
-                showWelcomeScreen();
             }
             
-            // Обработка кнопки "Назад"
-            tg.BackButton.onClick(function() {
-                if (document.getElementById('resultSection').style.display === 'block') {
-                    // Если открыты результаты, скрываем их
-                    document.getElementById('resultSection').style.display = 'none';
-                    tg.BackButton.hide();
-                } else {
-                    tg.close();
-                }
-            });
+            // Если ничего не нашли, показываем экран ввода кода
+            document.getElementById('debugInfo').textContent = 'Браузерная версия';
+            showAccessCodeScreen();
         }
         
-        // Показать интерфейс для администраторов
-        function showAdminInterface() {
-            // Скрываем все остальные экраны
+        function showScreen(screenId) {
+            // Скрываем все экраны
             document.getElementById('welcomeScreen').style.display = 'none';
-            document.getElementById('accessCodeSection').style.display = 'none';
-            document.getElementById('adminSection').style.display = 'block';
+            document.getElementById('accessCodeScreen').style.display = 'none';
+            document.getElementById('adminSection').style.display = 'none';
             
-            // Если это админ из Telegram Web App, показываем специальное приветствие
-            if (isTelegramWebApp && isAdmin) {
+            // Показываем нужный экран
+            document.getElementById(screenId).style.display = 'block';
+        }
+        
+        function showWelcomeScreen() {
+            showScreen('welcomeScreen');
+            document.getElementById('welcomeMessage').textContent = `👋 Приветствую, ${userName}!`;
+            
+            // В Telegram Web App показываем уведомление
+            if (isTelegramWebApp) {
+                setTimeout(() => {
+                    Telegram.WebApp.showPopup({
+                        title: 'Доступ ограничен',
+                        message: 'Эта функция доступна только администраторам',
+                        buttons: [{ type: 'ok' }]
+                    });
+                }, 1000);
+            }
+        }
+        
+        function showAccessCodeScreen() {
+            showScreen('accessCodeScreen');
+        }
+        
+        function showAdminInterface() {
+            showScreen('adminSection');
+            
+            // Добавляем приветствие для админа
+            if (isTelegramWebApp) {
                 const adminWelcome = document.createElement('div');
                 adminWelcome.className = 'validation-message success';
                 adminWelcome.style.cssText = 'margin-bottom: 20px; text-align: center;';
@@ -923,35 +975,6 @@
             initAdminInterface();
         }
         
-        // Показать экран приветствия для не-админов
-        function showWelcomeScreen() {
-            document.getElementById('welcomeScreen').style.display = 'block';
-            document.getElementById('accessCodeSection').style.display = 'none';
-            document.getElementById('adminSection').style.display = 'none';
-            
-            // Устанавливаем приветственное сообщение
-            document.getElementById('welcomeMessage').textContent = `👋 Приветствую, ${userName || 'Гость'}!`;
-            
-            // В Telegram Web App можно добавить кнопку для закрытия
-            if (isTelegramWebApp) {
-                setTimeout(() => {
-                    Telegram.WebApp.showPopup({
-                        title: 'Доступ ограничен',
-                        message: 'Эта функция доступна только администраторам',
-                        buttons: [{ type: 'ok' }]
-                    });
-                }, 500);
-            }
-        }
-        
-        // Показать экран ввода кода доступа
-        function showAccessCodeScreen() {
-            document.getElementById('welcomeScreen').style.display = 'none';
-            document.getElementById('accessCodeSection').style.display = 'block';
-            document.getElementById('adminSection').style.display = 'none';
-        }
-        
-        // Проверка кода доступа
         function checkAccessCode() {
             const inputCode = document.getElementById('accessCodeInput').value;
             const errorElement = document.getElementById('accessError');
@@ -964,14 +987,18 @@
                 document.getElementById('accessCodeInput').value = '';
                 document.getElementById('accessCodeInput').focus();
                 
-                // Автоматически скрыть ошибку через 3 секунды
                 setTimeout(() => {
                     errorElement.style.display = 'none';
                 }, 3000);
             }
         }
         
-        // Инициализация интерфейса администратора
+        // Остальной код (функции initAdminInterface, calculate, createReport и т.д.)
+        // остаются БЕЗ ИЗМЕНЕНИЙ из предыдущего варианта
+        
+        // ==== ВСТАВЬТЕ СЮДА ВСЕ ФУНКЦИИ ИЗ ПРЕДЫДУЩЕГО КОДА, НАЧИНАЯ С initAdminInterface ====
+        // (Я сократил чтобы не дублировать, но в реальном файле должны быть все функции)
+        
         function initAdminInterface() {
             // Получаем элементы DOM
             const hallPrice = document.getElementById('hallPrice');
@@ -1020,7 +1047,6 @@
                 const hourInputs = document.querySelectorAll('.hour-input');
                 hourInputs.forEach(input => {
                     input.addEventListener('input', updateValidation);
-                    // Предотвращаем скроллинг страницы при фокусе на iOS
                     input.addEventListener('touchstart', function(e) {
                         e.stopPropagation();
                     });
@@ -1098,7 +1124,7 @@
                 const hours = Number(hoursInput.value);
                 const totalPlayersCount = Number(totalPlayers.value);
                 
-                // Валидация (на всякий случай)
+                // Валидация
                 if (!isValidNumber(price, 100, 50000)) {
                     alert('Некорректная цена зала (от 100 до 50000)');
                     return;
@@ -1132,7 +1158,7 @@
                     return;
                 }
                 
-                // ЛОГИКА РАСЧЕТА (неизменная)
+                // ЛОГИКА РАСЧЕТА
                 const playersInHour = {};
                 for (let h = 1; h <= hours; h++) {
                     playersInHour[h] = 0;
@@ -1167,11 +1193,11 @@
                     });
                 });
                 
-                // Создаем отчёт в нужном формате
+                // Создаем отчёт
                 createReport(price, hours, totalPlayersCount, results);
             }
             
-            // Создание отчёта в нужном формате
+            // Создание отчёта
             function createReport(price, hours, players, results) {
                 let report = `📅 ${getDateInfo()}\n\n`;
                 report += `🏟 ОПЛАТА ЗА ЗАЛ\n\n`;
@@ -1184,7 +1210,6 @@
                 
                 report += `📊 Расчёт:\n`;
                 
-                // Сортируем по количеству часов (по возрастанию)
                 results.sort((a, b) => a.hours - b.hours);
                 
                 results.forEach(result => {
@@ -1213,29 +1238,24 @@
                 resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
             
-            // Улучшенная функция копирования - работает на всех устройствах
+            // Улучшенная функция копирования
             function copyToClipboard() {
                 const reportText = reportBox.textContent;
                 
-                // Способ 1: Используем современный API (работает в большинстве браузеров)
                 if (navigator.clipboard && window.isSecureContext) {
-                    // Безопасный контекст (HTTPS или localhost)
                     navigator.clipboard.writeText(reportText).then(() => {
                         showCopySuccess();
                     }).catch(err => {
-                        // Если не сработало, пробуем старый метод
                         fallbackCopyText(reportText);
                     });
                 } else {
-                    // Используем старый метод для всех остальных случаев
                     fallbackCopyText(reportText);
                 }
             }
             
-            // Резервный метод копирования (работает везде)
+            // Резервный метод копирования
             function fallbackCopyText(text) {
                 try {
-                    // Создаем временный textarea
                     const textArea = document.createElement('textarea');
                     textArea.value = text;
                     textArea.style.position = 'fixed';
@@ -1243,7 +1263,6 @@
                     textArea.style.top = '-999999px';
                     document.body.appendChild(textArea);
                     
-                    // Выделяем и копируем
                     textArea.focus();
                     textArea.select();
                     
@@ -1257,11 +1276,8 @@
                     }
                 } catch (err) {
                     console.error('Ошибка копирования: ', err);
-                    
-                    // Показываем альтернативный вариант
                     showStatusMessage('Скопируйте текст вручную из поля выше', 'error');
                     
-                    // В Telegram Web App можно показать всплывающее сообщение
                     if (isTelegramWebApp) {
                         Telegram.WebApp.showPopup({
                             title: 'Скопируйте вручную',
@@ -1274,11 +1290,9 @@
             
             // Показать успешное копирование
             function showCopySuccess() {
-                // Визуальная обратная связь
                 copyBtn.classList.add('success');
                 copyBtn.innerHTML = '<i class="fas fa-check"></i> Скопировано!';
                 
-                // В Telegram Web App можно показать всплывающее сообщение
                 if (isTelegramWebApp) {
                     Telegram.WebApp.showPopup({
                         title: 'Успешно',
@@ -1299,23 +1313,19 @@
             async function sendToTelegram() {
                 const reportText = reportBox.textContent;
                 
-                // Проверяем наличие отчёта
                 if (!reportText || reportText.trim() === '') {
                     showStatusMessage('Нет данных для отправки', 'error');
                     return;
                 }
                 
-                // Проверяем наличие интернета
                 if (!navigator.onLine) {
                     showStatusMessage('Нет подключения к интернету', 'error');
                     return;
                 }
                 
-                // Показываем статус отправки
                 showSendingStatus();
                 
                 try {
-                    // Отправка через Telegram Bot API
                     const url = `https://api.telegram.org/bot${TOKEN}/sendMessage`;
                     
                     const response = await fetch(url, {
@@ -1337,7 +1347,6 @@
                         showStatusMessage('✅ Отчёт успешно отправлен в Telegram!', 'success');
                         showSuccessStatus();
                         
-                        // Показываем уведомление в Telegram Web App
                         if (isTelegramWebApp) {
                             Telegram.WebApp.showPopup({
                                 title: 'Успешно',
@@ -1346,7 +1355,6 @@
                             });
                         }
                         
-                        // Через 3 секунды возвращаем нормальный вид кнопки
                         setTimeout(resetTelegramButton, 3000);
                     } else {
                         console.error('Ошибка Telegram API:', data);
@@ -1382,7 +1390,6 @@
                 telegramBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Ошибка';
                 telegramBtn.disabled = false;
                 
-                // Через 3 секунды возвращаем нормальный вид
                 setTimeout(resetTelegramButton, 3000);
             }
             
@@ -1436,7 +1443,6 @@
             generateHourFields();
         }
         
-        // Функция для получения даты
         function getDateInfo() {
             const now = new Date();
             const days = ['ВОСКРЕСЕНЬЕ', 'ПОНЕДЕЛЬНИК', 'ВТОРНИК', 'СРЕДА', 'ЧЕТВЕРГ', 'ПЯТНИЦА', 'СУББОТА'];
@@ -1448,9 +1454,6 @@
             
             return `${dayOfWeek} ${day}.${month}.${year}`;
         }
-        
-        // Запуск приложения при загрузке страницы
-        document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 </html>
