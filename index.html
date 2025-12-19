@@ -103,6 +103,36 @@
             }
         }
         
+        /* НОВЫЕ СТИЛИ ДЛЯ ЭКРАНА ПРИВЕТСТВИЯ */
+        .welcome-screen {
+            text-align: center;
+            padding: 40px 20px;
+            display: none;
+        }
+        
+        .welcome-icon {
+            font-size: 60px;
+            color: #1a2980;
+            margin-bottom: 20px;
+        }
+        
+        .welcome-message {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 30px;
+            line-height: 1.4;
+        }
+        
+        .welcome-subtitle {
+            font-size: 16px;
+            color: #666;
+            margin-top: 20px;
+        }
+        
+        .admin-section {
+            display: none;
+        }
+        
         .input-section {
             margin-bottom: 20px;
         }
@@ -606,71 +636,87 @@
             <div class="main-date" id="currentDate"></div>
         </div>
         
-        <div class="input-section">
-            <!-- Основные вводы -->
-            <div class="basic-inputs">
-                <div class="input-group">
-                    <label><i class="fas fa-money-bill-wave"></i> Цена зала за 1 час (₽)</label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-ruble-sign"></i>
-                        <input type="number" id="hallPrice" min="700" max="10000" step="100" placeholder="700-10000">
-                    </div>
-                </div>
-                
-                <div class="input-group">
-                    <label><i class="fas fa-clock"></i>Часов аренды зала</label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-clock"></i>
-                        <input type="number" id="hours" min="1" max="24" placeholder="1-24">
-                    </div>
-                </div>
-                
-                <div class="input-group">
-                    <label><i class="fas fa-users"></i> Всего игроков</label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-user"></i>
-                        <input type="number" id="totalPlayers" min="1" max="35" placeholder="1-35">
-                    </div>
-                </div>
+        <!-- НОВЫЙ ЭКРАН ПРИВЕТСТВИЯ ДЛЯ НЕ-АДМИНОВ -->
+        <div class="welcome-screen" id="welcomeScreen">
+            <div class="welcome-icon">
+                <i class="fas fa-hand-wave"></i>
             </div>
-            
-            <div class="validation-message" id="validationMessage"></div>
-            
-            <!-- Распределение игроков по часам -->
-            <div class="players-section">
-                <div class="section-title">
-                    <i class="fas fa-user-clock"></i> Распределение игроков по часам
-                </div>
-                
-                <div class="hours-grid" id="hoursContainer">
-                    <!-- Часы будут добавлены динамически -->
-                </div>
+            <div class="welcome-message" id="welcomeMessage">
+                Приветствие загружается...
+            </div>
+            <div class="welcome-subtitle">
+                Для расчётов обратитесь к администратору
             </div>
         </div>
         
-        <button class="calculate-btn" id="calculateBtn">
-            <i class="fas fa-calculator"></i> Рассчитать
-        </button>
-        
-        <div class="result-section" id="resultSection">
-            <div class="result-header">
-                <i class="fas fa-file-invoice-dollar"></i> Результаты расчёта
+        <!-- ОСНОВНОЙ ИНТЕРФЕЙС ДЛЯ АДМИНОВ -->
+        <div class="admin-section" id="adminSection">
+            <div class="input-section">
+                <!-- Основные вводы -->
+                <div class="basic-inputs">
+                    <div class="input-group">
+                        <label><i class="fas fa-money-bill-wave"></i> Цена зала за 1 час (₽)</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-ruble-sign"></i>
+                            <input type="number" id="hallPrice" min="700" max="10000" step="100" placeholder="700-10000">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label><i class="fas fa-clock"></i>Часов аренды зала</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-clock"></i>
+                            <input type="number" id="hours" min="1" max="24" placeholder="1-24">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label><i class="fas fa-users"></i> Всего игроков</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-user"></i>
+                            <input type="number" id="totalPlayers" min="1" max="35" placeholder="1-35">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="validation-message" id="validationMessage"></div>
+                
+                <!-- Распределение игроков по часам -->
+                <div class="players-section">
+                    <div class="section-title">
+                        <i class="fas fa-user-clock"></i> Распределение игроков по часам
+                    </div>
+                    
+                    <div class="hours-grid" id="hoursContainer">
+                        <!-- Часы будут добавлены динамически -->
+                    </div>
+                </div>
             </div>
             
-            <div class="report-box" id="reportBox">
-                <!-- Отчёт будет вставлен сюда -->
-            </div>
+            <button class="calculate-btn" id="calculateBtn">
+                <i class="fas fa-calculator"></i> Рассчитать
+            </button>
             
-            <!-- Сообщение о статусе отправки -->
-            <div class="status-message" id="statusMessage"></div>
-            
-            <div class="actions">
-                <button class="copy-btn" id="copyBtn">
-                    <i class="fas fa-copy"></i> Копировать результат
-                </button>
-                <button class="telegram-btn" id="telegramBtn">
-                    <i class="fab fa-telegram"></i> Отправить в Telegram
-                </button>
+            <div class="result-section" id="resultSection">
+                <div class="result-header">
+                    <i class="fas fa-file-invoice-dollar"></i> Результаты расчёта
+                </div>
+                
+                <div class="report-box" id="reportBox">
+                    <!-- Отчёт будет вставлен сюда -->
+                </div>
+                
+                <!-- Сообщение о статусе отправки -->
+                <div class="status-message" id="statusMessage"></div>
+                
+                <div class="actions">
+                    <button class="copy-btn" id="copyBtn">
+                        <i class="fas fa-copy"></i> Копировать результат
+                    </button>
+                    <button class="telegram-btn" id="telegramBtn">
+                        <i class="fab fa-telegram"></i> Отправить в Telegram
+                    </button>
+                </div>
             </div>
         </div>
         
@@ -680,30 +726,62 @@
     </div>
     
     <script>
-        // Конфигурация Telegram
+        // КОНФИГУРАЦИЯ
         const TOKEN = '8554439488:AAGAK-D2Q59YznAiN5Tt7F7dUMLAsWpjmdc';
         const CHAT_ID = -1003677318941;
         const RESULT_THREAD_ID = 8;
         
+        // СПИСОК АДМИНИСТРАТОРОВ (как в исходном коде)
+        const ADMIN_IDS = [1157942871, 5256755259];
+        
+        // Текущий пользователь
+        let currentUserId = null;
+        let isAdmin = false;
+        let userName = 'Гость';
+        
         // Оптимизация для Telegram Web App
         const isTelegramWebApp = window.Telegram && window.Telegram.WebApp;
         
-        if (isTelegramWebApp) {
-            // Инициализируем Telegram Web App
-            Telegram.WebApp.ready();
+        // Инициализация приложения
+        function initApp() {
+            // Отображаем текущую дату
+            document.getElementById('currentDate').textContent = getDateInfo();
             
-            // Раскрываем приложение на весь экран
+            if (isTelegramWebApp) {
+                initTelegramWebApp();
+            } else {
+                // Для браузера: всегда показываем админскую версию
+                showAdminInterface();
+            }
+        }
+        
+        // Инициализация Telegram Web App
+        function initTelegramWebApp() {
+            Telegram.WebApp.ready();
             Telegram.WebApp.expand();
             
             // Настраиваем цвета
             Telegram.WebApp.setHeaderColor('#1a2980');
             Telegram.WebApp.setBackgroundColor('#f8f9fa');
             
-            // Настраиваем тему
-            const theme = Telegram.WebApp.colorScheme;
-            if (theme === 'dark') {
-                document.documentElement.style.setProperty('--bg-color', '#1a1a1a');
-                document.documentElement.style.setProperty('--text-color', '#ffffff');
+            // Получаем данные пользователя
+            const user = Telegram.WebApp.initDataUnsafe.user;
+            if (user) {
+                currentUserId = user.id;
+                userName = user.first_name || 'Пользователь';
+                
+                // Проверяем, является ли пользователь админом
+                isAdmin = ADMIN_IDS.includes(currentUserId);
+                
+                // Показываем соответствующий интерфейс
+                if (isAdmin) {
+                    showAdminInterface();
+                } else {
+                    showWelcomeScreen();
+                }
+            } else {
+                // Если нет данных пользователя, показываем приветствие
+                showWelcomeScreen();
             }
             
             // Обработка кнопки "Назад"
@@ -716,32 +794,49 @@
                     Telegram.WebApp.close();
                 }
             });
+        }
+        
+        // Показать интерфейс для администраторов
+        function showAdminInterface() {
+            document.getElementById('welcomeScreen').style.display = 'none';
+            document.getElementById('adminSection').style.display = 'block';
             
-            // Получаем данные пользователя
-            const user = Telegram.WebApp.initDataUnsafe.user;
-            if (user) {
-                console.log('Пользователь Telegram:', user);
+            // Если это админ из Telegram Web App, показываем специальное приветствие
+            if (isTelegramWebApp && isAdmin) {
+                const welcomeElement = document.createElement('div');
+                welcomeElement.className = 'welcome-admin-message';
+                welcomeElement.style.cssText = 'text-align: center; margin-bottom: 20px; padding: 10px; background: #e8f5e9; border-radius: 10px; border-left: 4px solid #27ae60;';
+                welcomeElement.innerHTML = `<strong>👋 Приветствую, ${userName}!</strong><br>Давай начнем расчёт.`;
+                
+                const adminSection = document.getElementById('adminSection');
+                adminSection.insertBefore(welcomeElement, adminSection.firstChild);
+            }
+            
+            initAdminInterface();
+        }
+        
+        // Показать экран приветствия для не-админов
+        function showWelcomeScreen() {
+            document.getElementById('welcomeScreen').style.display = 'block';
+            document.getElementById('adminSection').style.display = 'none';
+            
+            // Устанавливаем приветственное сообщение
+            document.getElementById('welcomeMessage').textContent = `👋 Приветствую, ${userName}!`;
+            
+            // В Telegram Web App можно добавить кнопку для закрытия
+            if (isTelegramWebApp) {
+                setTimeout(() => {
+                    Telegram.WebApp.showPopup({
+                        title: 'Доступ ограничен',
+                        message: 'Эта функция доступна только администраторам',
+                        buttons: [{ type: 'ok' }]
+                    });
+                }, 500);
             }
         }
         
-        // Ждем загрузки DOM
-        document.addEventListener('DOMContentLoaded', function() {
-            // Отображаем текущую дату
-            function getDateInfo() {
-                const now = new Date();
-                const days = ['ВОСКРЕСЕНЬЕ', 'ПОНЕДЕЛЬНИК', 'ВТОРНИК', 'СРЕДА', 'ЧЕТВЕРГ', 'ПЯТНИЦА', 'СУББОТА'];
-                const dayOfWeek = days[now.getDay()];
-                
-                const day = String(now.getDate()).padStart(2, '0');
-                const month = String(now.getMonth() + 1).padStart(2, '0');
-                const year = now.getFullYear();
-                
-                return `${dayOfWeek} ${day}.${month}.${year}`;
-            }
-            
-            // Устанавливаем текущую дату
-            document.getElementById('currentDate').textContent = getDateInfo();
-            
+        // Инициализация интерфейса администратора
+        function initAdminInterface() {
             // Получаем элементы DOM
             const hallPrice = document.getElementById('hallPrice');
             const hoursInput = document.getElementById('hours');
@@ -1193,29 +1288,25 @@
                 lastTouchEnd = now;
             }, { passive: false });
             
-            // Инициализация при загрузке - ВСЕ ПОЛЯ ПУСТЫЕ
+            // Инициализация при загрузке
             generateHourFields();
+        }
+        
+        // Функция для получения даты
+        function getDateInfo() {
+            const now = new Date();
+            const days = ['ВОСКРЕСЕНЬЕ', 'ПОНЕДЕЛЬНИК', 'ВТОРНИК', 'СРЕДА', 'ЧЕТВЕРГ', 'ПЯТНИЦА', 'СУББОТА'];
+            const dayOfWeek = days[now.getDay()];
             
-            // Для тестирования примера можно раскомментировать:
-            /*
-            setTimeout(() => {
-                // Пример из задания для быстрого тестирования
-                hallPrice.value = "1500";
-                hoursInput.value = "5";
-                totalPlayers.value = "19";
-                generateHourFields();
-                
-                // Ввод данных: указываем сколько игроков сколько часов играли
-                const inputs = document.querySelectorAll('#hoursContainer input');
-                if (inputs[1]) inputs[1].value = 1;   // 2 часа
-                if (inputs[3]) inputs[3].value = 10;  // 4 часа
-                if (inputs[4]) inputs[4].value = 8;   // 5 часов
-                
-                updateValidation();
-            }, 100);
-            */
-        });
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = now.getFullYear();
+            
+            return `${dayOfWeek} ${day}.${month}.${year}`;
+        }
+        
+        // Запуск приложения при загрузке страницы
+        document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 </html>
-
