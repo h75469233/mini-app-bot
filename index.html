@@ -792,229 +792,49 @@
         </div>
     </div>
     
-    <script>
+    <<script>
         // Конфигурация Telegram
         const TOKEN = '8554439488:AAGAK-D2Q59YznAiN5Tt7F7dUMLAsWpjmdc';
         const CHAT_ID = -1003677318941;
         const RESULT_THREAD_ID = 8;
         
-        // Список разрешенных пользователей
-        const ALLOWED_USER_IDS = [1157942871, 5256755259];
+        // ВРЕМЕННО: отключаем проверку доступа для тестирования
+        console.log("=== РЕЖИМ ТЕСТИРОВАНИЯ ===");
+        console.log("Проверка доступа отключена");
         
-        // Улучшенная функция проверки Telegram Web App
-        function isTelegramWebAppEnvironment() {
-            // Способ 1: Проверяем наличие объекта Telegram.WebApp
-            if (typeof window.Telegram !== 'undefined' && 
-                typeof window.Telegram.WebApp !== 'undefined') {
-                console.log("Telegram Web App обнаружен через объект");
-                return true;
-            }
+        // Основная инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Запуск приложения без проверки доступа");
             
-            // Способ 2: Проверяем параметры в URL (Telegram добавляет их)
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('tgWebAppData') || 
-                urlParams.has('tgWebAppVersion') ||
-                urlParams.has('tgWebAppPlatform')) {
-                console.log("Telegram Web App обнаружен через URL параметры");
-                return true;
-            }
+            // Сразу запускаем основное приложение
+            document.getElementById('accessScreen').style.display = 'none';
+            document.getElementById('mainContainer').style.display = 'block';
             
-            // Способ 3: Проверяем hash в URL
-            if (window.location.hash.includes('tgWebApp')) {
-                console.log("Telegram Web App обнаружен через hash");
-                return true;
-            }
-            
-            // Способ 4: Проверяем user-agent (не надежно, но как запасной вариант)
-            const userAgent = navigator.userAgent.toLowerCase();
-            if (userAgent.includes('telegram') || 
-                userAgent.includes('webview') ||
-                window.navigator.userAgentData?.brands?.some(brand => 
-                    brand.brand.toLowerCase().includes('telegram'))) {
-                console.log("Telegram Web App обнаружен через user-agent");
-                return true;
-            }
-            
-            console.log("Telegram Web App НЕ обнаружен");
-            return false;
-        }
-        
-        // Основная функция проверки доступа
-        function checkAccess() {
-            console.log("=== НАЧАЛО ПРОВЕРКИ ДОСТУПА ===");
-            
-            // Проверяем, находимся ли мы в Telegram Web App
-            const isTelegramEnv = isTelegramWebAppEnvironment();
-            
-            if (!isTelegramEnv) {
-                showAccessDenied("Это приложение доступно только в Telegram.<br>Откройте его через бота в Telegram.");
-                return;
-            }
-            
-            // Даем время на инициализацию Telegram Web App
-            setTimeout(() => {
-                try {
-                    // Пытаемся получить доступ к Telegram Web App API
-                    let telegramInitialized = false;
-                    let user = null;
-                    
-                    if (typeof window.Telegram !== 'undefined' && 
-                        typeof window.Telegram.WebApp !== 'undefined') {
-                        
-                        // Инициализируем Telegram Web App
-                        Telegram.WebApp.ready();
-                        telegramInitialized = true;
-                        
-                        // Пытаемся получить данные пользователя
-                        user = Telegram.WebApp.initDataUnsafe?.user;
-                        
-                        console.log("Telegram Web App инициализирован");
-                        console.log("Данные пользователя:", user);
-                    }
-                    
-                    if (!telegramInitialized) {
-                        showAccessDenied("Не удалось инициализировать Telegram Web App.<br>Попробуйте перезагрузить приложение.");
-                        return;
-                    }
-                    
-                    if (!user) {
-                        // Если не удалось получить данные пользователя, но мы в Telegram
-                        // Даем возможность ввести ID вручную (для отладки)
-                        showManualAccessScreen();
-                        return;
-                    }
-                    
-                    const userId = user.id;
-                    const firstName = user.first_name || "Пользователь";
-                    const username = user.username ? `@${user.username}` : "Не указан";
-                    
-                    // Показываем информацию для отладки
-                    document.getElementById('userInfo').style.display = 'block';
-                    document.getElementById('debugInfo').innerHTML = `
-                        ID: ${userId}<br>
-                        Имя: ${firstName}<br>
-                        Username: ${username}<br>
-                        Платформа: ${Telegram.WebApp.platform || "Неизвестно"}
-                    `;
-                    
-                    console.log("Информация о пользователе:", {
-                        id: userId,
-                        name: firstName,
-                        username: username,
-                        platform: Telegram.WebApp.platform
-                    });
-                    
-                    // Проверяем доступ по ID
-                    if (ALLOWED_USER_IDS.includes(userId)) {
-                        // Доступ разрешен
-                        showAccessGranted(firstName);
-                    } else {
-                        // Доступ запрещен
-                        showAccessDenied(`Пользователь ${firstName} (ID: ${userId}) не имеет доступа к этому приложению.`);
-                    }
-                    
-                } catch (error) {
-                    console.error("Ошибка при проверке доступа:", error);
-                    showAccessDenied("Произошла ошибка при проверке доступа.<br>Попробуйте перезагрузить приложение.");
-                }
-            }, 1000); // Даем 1 секунду на инициализацию Telegram
-        }
-        
-        // Функция показа экрана ручного ввода доступа (для отладки)
-        function showManualAccessScreen() {
-            document.getElementById('accessIcon').className = 'access-icon';
-            document.getElementById('accessIcon').innerHTML = '<i class="fas fa-key"></i>';
-            document.getElementById('accessTitle').textContent = 'Введите ID вручную';
-            document.getElementById('accessMessage').innerHTML = `
-                Не удалось автоматически получить ID.<br>
-                Введите ваш Telegram ID вручную:
-            `;
-            
-            // Скрываем блок с информацией
-            document.getElementById('userInfo').style.display = 'none';
-            
-            // Создаем поле для ввода ID
-            const inputHTML = `
-                <div style="margin: 20px 0;">
-                    <input type="number" id="manualUserId" 
-                           placeholder="Введите ваш Telegram ID" 
-                           style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;">
-                    <p style="font-size: 12px; color: #666; margin-top: 5px;">
-                        ID можно узнать через бота @userinfobot
-                    </p>
-                </div>
-            `;
-            
-            document.getElementById('accessMessage').insertAdjacentHTML('beforeend', inputHTML);
-            
-            // Показываем кнопки
-            document.getElementById('accessBtn').style.display = 'inline-flex';
-            document.getElementById('closeBtn').style.display = 'inline-flex';
-            
-            // Меняем текст кнопок
-            document.getElementById('accessBtn').innerHTML = '<i class="fas fa-check"></i> Проверить доступ';
-            document.getElementById('closeBtn').innerHTML = '<i class="fas fa-times"></i> Отмена';
-            
-            // Обработчики кнопок
-            document.getElementById('accessBtn').onclick = function() {
-                const manualId = parseInt(document.getElementById('manualUserId').value);
-                
-                if (!manualId || isNaN(manualId)) {
-                    alert("Пожалуйста, введите корректный ID");
-                    return;
-                }
-                
-                if (ALLOWED_USER_IDS.includes(manualId)) {
-                    showAccessGranted("Пользователь (ручной ввод)");
-                    // Сохраняем ID в localStorage для будущих сессий
-                    localStorage.setItem('manual_access_id', manualId);
-                } else {
-                    showAccessDenied(`Пользователь с ID ${manualId} не имеет доступа.`);
-                }
-            };
-            
-            document.getElementById('closeBtn').onclick = function() {
-                if (typeof window.Telegram !== 'undefined' && window.Telegram.WebApp) {
-                    Telegram.WebApp.close();
-                } else {
-                    document.getElementById('accessScreen').style.display = 'none';
-                    document.body.innerHTML = '<div style="text-align:center; padding: 40px;"><h2>Доступ запрещён</h2><p>Приложение доступно только в Telegram.</p></div>';
-                }
-            };
-            
-            // Проверяем, есть ли сохраненный ID в localStorage
-            const savedId = localStorage.getItem('manual_access_id');
-            if (savedId && ALLOWED_USER_IDS.includes(parseInt(savedId))) {
-                document.getElementById('manualUserId').value = savedId;
-            }
-        }
-        
-        // Функция показа успешного доступа
-        function showAccessGranted(userName) {
-            document.getElementById('accessIcon').className = 'access-icon success';
-            document.getElementById('accessIcon').innerHTML = '<i class="fas fa-check-circle"></i>';
-            document.getElementById('accessTitle').textContent = 'Доступ разрешён!';
-            document.getElementById('accessMessage').innerHTML = `
-                Привет, ${userName}!<br>
-                Добро пожаловать в Чарчулятор.
-            `;
-            
-            // Скрываем блок с информацией (если был показан)
-            document.getElementById('userInfo').style.display = 'none';
-            
-            // Показываем кнопку продолжения
-            document.getElementById('accessBtn').style.display = 'inline-flex';
-            document.getElementById('closeBtn').style.display = 'none';
-            
-            // Восстанавливаем стандартный вид кнопок
-            document.getElementById('accessBtn').innerHTML = '<i class="fas fa-check"></i> Продолжить';
-            
-            // Настраиваем Telegram Web App (если доступен)
+            // Инициализируем Telegram Web App если есть
             if (typeof window.Telegram !== 'undefined' && window.Telegram.WebApp) {
                 try {
+                    Telegram.WebApp.ready();
                     Telegram.WebApp.expand();
                     Telegram.WebApp.setHeaderColor('#1a2980');
                     Telegram.WebApp.setBackgroundColor('#f8f9fa');
+                    
+                    // Показываем ID пользователя в консоли для отладки
+                    const user = Telegram.WebApp.initDataUnsafe?.user;
+                    if (user) {
+                        console.log("Telegram User ID:", user.id);
+                        console.log("Telegram User Name:", user.first_name);
+                        
+                        // Можно показать всплывающее уведомление с ID
+                        setTimeout(() => {
+                            if (Telegram.WebApp.showPopup) {
+                                Telegram.WebApp.showPopup({
+                                    title: "Информация",
+                                    message: `Ваш ID: ${user.id}\nСообщите его разработчику для доступа`,
+                                    buttons: [{type: "ok"}]
+                                });
+                            }
+                        }, 2000);
+                    }
                     
                     // Обработка кнопки "Назад"
                     Telegram.WebApp.BackButton.onClick(function() {
@@ -1024,48 +844,13 @@
                         }
                     });
                 } catch (e) {
-                    console.error("Ошибка настройки Telegram Web App:", e);
+                    console.error("Ошибка Telegram:", e);
                 }
             }
             
-            // Обработчик кнопки продолжения
-            document.getElementById('accessBtn').onclick = function() {
-                startMainApp();
-            };
-        }
-        
-        // Функция показа отказа в доступе
-        function showAccessDenied(message) {
-            document.getElementById('accessIcon').className = 'access-icon';
-            document.getElementById('accessIcon').innerHTML = '<i class="fas fa-ban"></i>';
-            document.getElementById('accessTitle').textContent = 'Доступ запрещён';
-            document.getElementById('accessMessage').innerHTML = message;
-            
-            // Скрываем блок с информацией
-            document.getElementById('userInfo').style.display = 'none';
-            
-            // Показываем кнопку закрытия
-            document.getElementById('accessBtn').style.display = 'none';
-            document.getElementById('closeBtn').style.display = 'inline-flex';
-            
-            // Восстанавливаем стандартный вид кнопки
-            document.getElementById('closeBtn').innerHTML = '<i class="fas fa-times"></i> Закрыть';
-            
-            // Обработчик кнопки закрытия
-            document.getElementById('closeBtn').onclick = function() {
-                if (typeof window.Telegram !== 'undefined' && window.Telegram.WebApp) {
-                    try {
-                        Telegram.WebApp.close();
-                    } catch (e) {
-                        console.error("Ошибка при закрытии:", e);
-                        document.getElementById('accessScreen').style.display = 'none';
-                    }
-                } else {
-                    document.getElementById('accessScreen').style.display = 'none';
-                    document.body.innerHTML = '<div style="text-align:center; padding: 40px;"><h2>Доступ запрещён</h2><p>Приложение доступно только в Telegram.</p></div>';
-                }
-            };
-        }
+            // Запускаем основное приложение
+            initMainApp();
+        });
         
         // Функция запуска основного приложения
         function startMainApp() {
